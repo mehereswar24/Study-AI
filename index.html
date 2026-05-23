@@ -1,0 +1,971 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>StudyAI — Your Personal Study Assistant</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"/>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;600;700&family=DM+Sans:wght@300;400;500&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet"/>
+<style>
+:root {
+  --bg: #0e0f11;
+  --bg2: #15171a;
+  --bg3: #1c1f24;
+  --border: #2a2d34;
+  --border2: #353940;
+  --text: #e8e9eb;
+  --text2: #9a9da6;
+  --text3: #5c5f6b;
+  --accent: #c8a96e;
+  --accent2: #e8c98a;
+  --accent-dim: rgba(200,169,110,0.12);
+  --accent-glow: rgba(200,169,110,0.06);
+  --green: #4caf82;
+  --green-dim: rgba(76,175,130,0.12);
+  --blue: #5b9bd5;
+  --blue-dim: rgba(91,155,213,0.12);
+  --red: #d45b5b;
+  --red-dim: rgba(212,91,91,0.12);
+  --purple: #9b7fd4;
+  --purple-dim: rgba(155,127,212,0.12);
+  --r: 10px;
+  --r-lg: 16px;
+  --sans: 'DM Sans', sans-serif;
+  --serif: 'Playfair Display', serif;
+  --mono: 'DM Mono', monospace;
+  --shadow: 0 4px 24px rgba(0,0,0,0.4);
+  --shadow-lg: 0 8px 48px rgba(0,0,0,0.6);
+}
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:var(--sans);background:var(--bg);color:var(--text);min-height:100vh;overflow-x:hidden}
+::selection{background:var(--accent-dim);color:var(--accent2)}
+::-webkit-scrollbar{width:6px}
+::-webkit-scrollbar-track{background:var(--bg)}
+::-webkit-scrollbar-thumb{background:var(--border2);border-radius:3px}
+
+/* ── Layout ── */
+.app{display:grid;grid-template-columns:280px 1fr;grid-template-rows:56px 1fr;min-height:100vh}
+.topbar{grid-column:1/-1;display:flex;align-items:center;padding:0 24px;border-bottom:1px solid var(--border);background:var(--bg);gap:16px;position:sticky;top:0;z-index:100}
+.logo{font-family:var(--serif);font-size:22px;color:var(--accent);letter-spacing:-0.5px;display:flex;align-items:center;gap:8px}
+.logo svg{width:24px;height:24px}
+.topbar-right{margin-left:auto;display:flex;align-items:center;gap:12px}
+.sidebar{background:var(--bg2);border-right:1px solid var(--border);padding:20px 16px;overflow-y:auto;display:flex;flex-direction:column;gap:6px}
+.main{overflow-y:auto;background:var(--bg)}
+
+/* ── Sidebar ── */
+.sidebar-section{font-size:10px;font-weight:500;letter-spacing:1.5px;color:var(--text3);text-transform:uppercase;padding:12px 8px 6px;margin-top:8px}
+.sidebar-btn{display:flex;align-items:center;gap:10px;padding:9px 12px;border-radius:var(--r);border:none;background:transparent;color:var(--text2);font-family:var(--sans);font-size:13px;cursor:pointer;width:100%;text-align:left;transition:all .15s}
+.sidebar-btn:hover{background:var(--bg3);color:var(--text)}
+.sidebar-btn.active{background:var(--accent-dim);color:var(--accent);border:1px solid rgba(200,169,110,0.2)}
+.sidebar-btn svg{width:16px;height:16px;flex-shrink:0;opacity:.7}
+.sidebar-btn.active svg{opacity:1}
+.history-item{display:flex;flex-direction:column;padding:10px 12px;border-radius:var(--r);border:none;background:transparent;color:var(--text2);font-family:var(--sans);font-size:12px;cursor:pointer;width:100%;text-align:left;transition:all .15s;border:1px solid transparent;gap:3px}
+.history-item:hover{background:var(--bg3);border-color:var(--border);color:var(--text)}
+.history-item .hi-title{font-size:12px;color:var(--text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:200px}
+.history-item .hi-meta{font-size:10px;color:var(--text3);display:flex;align-items:center;gap:6px}
+.mode-badge{display:inline-flex;align-items:center;padding:2px 7px;border-radius:20px;font-size:10px;font-weight:500;font-family:var(--mono)}
+.badge-notes{background:var(--blue-dim);color:var(--blue)}
+.badge-flashcards{background:var(--green-dim);color:var(--green)}
+.badge-quiz{background:var(--purple-dim);color:var(--purple)}
+.badge-mindmap{background:var(--accent-dim);color:var(--accent)}
+
+/* ── Home / Upload ── */
+.home{padding:48px 64px;max-width:780px;margin:0 auto}
+.home-hero{margin-bottom:48px}
+.home-hero h1{font-family:var(--serif);font-size:42px;line-height:1.2;color:var(--text);margin-bottom:12px}
+.home-hero h1 span{color:var(--accent)}
+.home-hero p{color:var(--text2);font-size:16px;line-height:1.7;max-width:520px}
+.drop-zone{border:1.5px dashed var(--border2);border-radius:var(--r-lg);padding:48px 32px;text-align:center;cursor:pointer;transition:all .2s;background:var(--bg2);position:relative;margin-bottom:28px}
+.drop-zone:hover,.drop-zone.drag{border-color:var(--accent);background:var(--accent-glow)}
+.drop-zone svg{width:40px;height:40px;color:var(--accent);margin-bottom:16px;opacity:.8}
+.drop-zone h3{font-family:var(--serif);font-size:18px;margin-bottom:6px}
+.drop-zone p{color:var(--text2);font-size:13px}
+.drop-zone input{position:absolute;inset:0;opacity:0;cursor:pointer;width:100%;height:100%}
+.file-selected{display:none;align-items:center;gap:12px;padding:12px 16px;background:var(--accent-dim);border:1px solid rgba(200,169,110,0.25);border-radius:var(--r);margin-bottom:24px}
+.file-selected svg{color:var(--accent);width:20px;height:20px;flex-shrink:0}
+.file-selected span{font-size:13px;color:var(--accent2);flex:1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.section-label{font-size:11px;font-weight:500;letter-spacing:1.2px;text-transform:uppercase;color:var(--text3);margin-bottom:12px}
+.mode-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:28px}
+.mode-card{border:1.5px solid var(--border);border-radius:var(--r);padding:16px;cursor:pointer;transition:all .2s;background:var(--bg2);text-align:left}
+.mode-card:hover{border-color:var(--border2);background:var(--bg3)}
+.mode-card.selected{border-color:var(--accent);background:var(--accent-dim)}
+.mode-card input{display:none}
+.mode-card-icon{font-size:20px;margin-bottom:8px}
+.mode-card h4{font-size:13px;font-weight:500;margin-bottom:3px;color:var(--text)}
+.mode-card p{font-size:11px;color:var(--text3);line-height:1.5}
+.btn-primary{background:var(--accent);color:#0e0f11;border:none;border-radius:var(--r);padding:13px 28px;font-family:var(--sans);font-size:14px;font-weight:500;cursor:pointer;transition:all .2s;display:inline-flex;align-items:center;gap:8px;width:100%;justify-content:center}
+.btn-primary:hover{background:var(--accent2);transform:translateY(-1px);box-shadow:0 4px 16px rgba(200,169,110,0.3)}
+.btn-primary:disabled{opacity:.5;cursor:not-allowed;transform:none;box-shadow:none}
+.btn-secondary{background:var(--bg3);color:var(--text);border:1px solid var(--border);border-radius:var(--r);padding:9px 16px;font-family:var(--sans);font-size:13px;cursor:pointer;transition:all .15s;display:inline-flex;align-items:center;gap:6px}
+.btn-secondary:hover{border-color:var(--border2);background:var(--bg2)}
+.btn-ghost{background:transparent;color:var(--text2);border:none;border-radius:var(--r);padding:7px 12px;font-family:var(--sans);font-size:13px;cursor:pointer;transition:all .15s;display:inline-flex;align-items:center;gap:6px}
+.btn-ghost:hover{color:var(--text);background:var(--bg3)}
+
+/* ── Loading ── */
+.loading-screen{padding:64px;text-align:center;display:none}
+.loading-screen.show{display:block}
+.spinner{width:44px;height:44px;border:2px solid var(--border);border-top-color:var(--accent);border-radius:50%;animation:spin 1s linear infinite;margin:0 auto 24px}
+@keyframes spin{to{transform:rotate(360deg)}}
+.loading-steps{display:flex;flex-direction:column;gap:8px;max-width:280px;margin:24px auto 0;text-align:left}
+.loading-step{display:flex;align-items:center;gap:10px;font-size:13px;color:var(--text3);transition:color .3s}
+.loading-step.done{color:var(--green)}
+.loading-step.active{color:var(--text)}
+.step-dot{width:6px;height:6px;border-radius:50%;background:var(--border2);flex-shrink:0;transition:background .3s}
+.loading-step.done .step-dot{background:var(--green)}
+.loading-step.active .step-dot{background:var(--accent);animation:pulse 1s ease-in-out infinite}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.4}}
+
+/* ── Result pages ── */
+.result-wrap{padding:32px 48px;max-width:920px;margin:0 auto;animation:fadeIn .4s ease}
+@keyframes fadeIn{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
+.result-header{display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:28px;gap:16px}
+.result-header-left h2{font-family:var(--serif);font-size:26px;margin-bottom:6px}
+.result-header-left .meta{display:flex;align-items:center;gap:10px;font-size:12px;color:var(--text3)}
+.result-actions{display:flex;gap:8px;flex-shrink:0}
+.summary-box{background:var(--bg2);border:1px solid var(--border);border-left:3px solid var(--accent);border-radius:var(--r);padding:16px 20px;margin-bottom:28px;font-size:14px;color:var(--text2);line-height:1.7}
+
+/* ── Notes ── */
+.notes-section{background:var(--bg2);border:1px solid var(--border);border-radius:var(--r-lg);margin-bottom:16px;overflow:hidden}
+.notes-section-header{padding:16px 20px;display:flex;align-items:center;justify-content:space-between;cursor:pointer;transition:background .15s}
+.notes-section-header:hover{background:var(--bg3)}
+.notes-section-header h3{font-family:var(--serif);font-size:16px;font-weight:600;display:flex;align-items:center;gap:10px}
+.notes-section-body{padding:0 20px 20px;border-top:1px solid var(--border)}
+.notes-section-body p{font-size:14px;line-height:1.8;color:var(--text2);margin-top:16px}
+.key-terms{display:flex;flex-wrap:wrap;gap:6px;margin-top:12px}
+.key-term{padding:3px 10px;background:var(--bg3);border:1px solid var(--border);border-radius:20px;font-size:11px;font-family:var(--mono);color:var(--text2)}
+.highlighted-term{background:var(--accent-dim);border-color:rgba(200,169,110,0.3);color:var(--accent);cursor:pointer;transition:all .15s}
+.highlighted-term:hover{background:rgba(200,169,110,0.2)}
+.takeaways{list-style:none;display:flex;flex-direction:column;gap:8px;margin-top:8px}
+.takeaways li{display:flex;align-items:flex-start;gap:10px;font-size:14px;color:var(--text2);line-height:1.6}
+.takeaways li::before{content:'';width:6px;height:6px;border-radius:50%;background:var(--accent);flex-shrink:0;margin-top:7px}
+
+/* ── Flashcards ── */
+.flashcard-grid{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+.flashcard{perspective:600px;height:160px;cursor:pointer}
+.flashcard-inner{position:relative;width:100%;height:100%;transform-style:preserve-3d;transition:transform .4s cubic-bezier(.4,0,.2,1)}
+.flashcard.flipped .flashcard-inner{transform:rotateY(180deg)}
+.flashcard-face{position:absolute;inset:0;backface-visibility:hidden;border-radius:var(--r-lg);padding:20px;display:flex;flex-direction:column;justify-content:center;align-items:center;text-align:center;border:1.5px solid var(--border)}
+.flashcard-front{background:var(--bg2)}
+.flashcard-back{background:var(--bg3);transform:rotateY(180deg);border-color:var(--accent);background:var(--accent-dim)}
+.flashcard-face p{font-size:14px;line-height:1.6;color:var(--text)}
+.flashcard-face .face-label{font-size:10px;letter-spacing:1.2px;text-transform:uppercase;color:var(--text3);margin-bottom:10px;font-family:var(--mono)}
+.flashcard-face.flashcard-back p{color:var(--accent2)}
+.diff-badge{position:absolute;top:12px;right:12px;padding:2px 8px;border-radius:20px;font-size:10px;font-family:var(--mono)}
+.diff-easy{background:var(--green-dim);color:var(--green)}
+.diff-medium{background:var(--accent-dim);color:var(--accent)}
+.diff-hard{background:var(--red-dim);color:var(--red)}
+.flip-hint{text-align:center;color:var(--text3);font-size:11px;margin-bottom:16px;display:flex;align-items:center;justify-content:center;gap:6px}
+
+/* ── Quiz ── */
+.quiz-question{background:var(--bg2);border:1.5px solid var(--border);border-radius:var(--r-lg);padding:24px;margin-bottom:16px;transition:border-color .2s}
+.quiz-question.answered{border-color:var(--border2)}
+.quiz-q-num{font-size:11px;font-family:var(--mono);color:var(--text3);margin-bottom:10px;letter-spacing:1px}
+.quiz-q-text{font-size:15px;line-height:1.6;margin-bottom:18px;color:var(--text)}
+.quiz-options{display:flex;flex-direction:column;gap:8px}
+.quiz-option{display:flex;align-items:center;gap:12px;padding:11px 16px;border-radius:var(--r);border:1.5px solid var(--border);cursor:pointer;font-size:13px;color:var(--text2);transition:all .15s;background:var(--bg3)}
+.quiz-option:hover:not(.disabled){border-color:var(--border2);background:var(--bg);color:var(--text)}
+.quiz-option.selected{border-color:var(--accent);color:var(--accent);background:var(--accent-dim)}
+.quiz-option.correct{border-color:var(--green);color:var(--green);background:var(--green-dim)}
+.quiz-option.wrong{border-color:var(--red);color:var(--red);background:var(--red-dim)}
+.quiz-option.disabled{cursor:default}
+.quiz-option .opt-key{font-family:var(--mono);font-size:11px;background:var(--bg);border:1px solid var(--border);border-radius:4px;padding:1px 6px;flex-shrink:0}
+.quiz-explanation{margin-top:12px;padding:12px 16px;background:var(--bg);border-radius:var(--r);font-size:12px;color:var(--text2);line-height:1.6;display:none;border-left:2px solid var(--green)}
+.quiz-explanation.show{display:block}
+.quiz-score{background:var(--bg2);border:1px solid var(--border);border-radius:var(--r-lg);padding:28px;text-align:center;margin-bottom:24px;display:none}
+.quiz-score.show{display:block}
+.score-big{font-family:var(--serif);font-size:56px;color:var(--accent);line-height:1}
+.score-label{font-size:14px;color:var(--text2);margin-top:6px}
+
+/* ── Mind Map ── */
+#mindmap-canvas{width:100%;border-radius:var(--r-lg);background:var(--bg2);border:1px solid var(--border)}
+.mindmap-legend{display:flex;flex-wrap:wrap;gap:8px;margin-top:16px}
+
+/* ── Chat ── */
+.chat-panel{position:fixed;right:0;top:56px;width:360px;height:calc(100vh - 56px);background:var(--bg2);border-left:1px solid var(--border);display:flex;flex-direction:column;transform:translateX(100%);transition:transform .3s cubic-bezier(.4,0,.2,1);z-index:90;box-shadow:var(--shadow-lg)}
+.chat-panel.open{transform:translateX(0)}
+.chat-header{padding:16px 20px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between}
+.chat-header h3{font-family:var(--serif);font-size:16px}
+.chat-messages{flex:1;overflow-y:auto;padding:16px;display:flex;flex-direction:column;gap:12px}
+.chat-msg{max-width:90%;padding:10px 14px;border-radius:var(--r);font-size:13px;line-height:1.6}
+.chat-msg.user{background:var(--accent-dim);border:1px solid rgba(200,169,110,0.2);color:var(--accent2);align-self:flex-end}
+.chat-msg.ai{background:var(--bg3);border:1px solid var(--border);color:var(--text2);align-self:flex-start}
+.chat-msg.typing{color:var(--text3)}
+.chat-input-row{padding:16px;border-top:1px solid var(--border);display:flex;gap:8px}
+.chat-input{flex:1;background:var(--bg3);border:1px solid var(--border);border-radius:var(--r);padding:10px 14px;font-family:var(--sans);font-size:13px;color:var(--text);resize:none;outline:none;transition:border-color .15s;line-height:1.5}
+.chat-input:focus{border-color:var(--accent)}
+.chat-send{background:var(--accent);border:none;border-radius:var(--r);width:36px;height:36px;display:flex;align-items:center;justify-content:center;cursor:pointer;flex-shrink:0;transition:background .15s;align-self:flex-end}
+.chat-send:hover{background:var(--accent2)}
+.chat-send svg{width:16px;height:16px;color:#0e0f11}
+
+/* ── Explain popup ── */
+.explain-popup{position:fixed;bottom:24px;left:50%;transform:translateX(-50%);background:var(--bg2);border:1px solid var(--border);border-radius:var(--r-lg);padding:16px 20px;max-width:480px;width:90%;box-shadow:var(--shadow-lg);z-index:200;display:none;animation:slideUp .2s ease}
+.explain-popup.show{display:block}
+@keyframes slideUp{from{opacity:0;transform:translate(-50%,12px)}to{opacity:1;transform:translate(-50%,0)}}
+.explain-popup h4{font-size:11px;letter-spacing:1.2px;text-transform:uppercase;color:var(--text3);margin-bottom:8px;font-family:var(--mono)}
+.explain-popup p{font-size:13px;line-height:1.7;color:var(--text2)}
+.explain-close{position:absolute;top:12px;right:12px;background:none;border:none;color:var(--text3);cursor:pointer;font-size:16px}
+
+/* ── Toast ── */
+.toast{position:fixed;bottom:24px;right:24px;background:var(--bg2);border:1px solid var(--border);border-radius:var(--r);padding:12px 18px;font-size:13px;color:var(--text);box-shadow:var(--shadow);z-index:300;transform:translateY(64px);opacity:0;transition:all .25s;display:flex;align-items:center;gap:8px}
+.toast.show{transform:translateY(0);opacity:1}
+.toast.success{border-color:rgba(76,175,130,0.4);background:var(--green-dim);color:var(--green)}
+
+/* ── Export modal ── */
+.modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,.6);z-index:150;display:none;align-items:center;justify-content:center;backdrop-filter:blur(4px)}
+.modal-overlay.show{display:flex}
+.modal{background:var(--bg2);border:1px solid var(--border);border-radius:var(--r-lg);padding:28px;width:360px;box-shadow:var(--shadow-lg)}
+.modal h3{font-family:var(--serif);font-size:20px;margin-bottom:6px}
+.modal p{font-size:13px;color:var(--text2);margin-bottom:20px}
+.export-options{display:flex;flex-direction:column;gap:10px;margin-bottom:20px}
+.export-opt{display:flex;align-items:center;gap:12px;padding:13px 16px;border:1.5px solid var(--border);border-radius:var(--r);cursor:pointer;transition:all .15s;font-size:14px}
+.export-opt:hover{border-color:var(--accent);background:var(--accent-dim);color:var(--accent)}
+.export-opt svg{width:18px;height:18px;opacity:.7}
+
+/* ── Responsive ── */
+@media(max-width:768px){
+  .app{grid-template-columns:1fr}
+  .sidebar{display:none}
+  .home{padding:24px}
+  .mode-grid{grid-template-columns:1fr}
+  .flashcard-grid{grid-template-columns:1fr}
+  .result-wrap{padding:20px 16px}
+}
+.history-item-wrap{position:relative;display:flex;align-items:center;gap:4px}
+.history-item-wrap .hi-del{opacity:0;background:transparent;border:none;color:var(--text3);cursor:pointer;padding:4px 6px;border-radius:6px;font-size:13px;flex-shrink:0;transition:all .15s}
+.history-item-wrap:hover .hi-del{opacity:1}
+.history-item-wrap .hi-del:hover{color:var(--red);background:var(--red-dim)}
+</style>
+</head>
+<body>
+<div class="app">
+
+<!-- ── Topbar ── -->
+<header class="topbar">
+  <div class="logo">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M12 6.042A8.967 8.967 0 006 3.75c-1.052 0-2.062.18-3 .512v14.25A8.987 8.987 0 016 18c2.305 0 4.408.867 6 2.292m0-14.25a8.966 8.966 0 016-2.292c1.052 0 2.062.18 3 .512v14.25A8.987 8.987 0 0018 18a8.967 8.967 0 00-6 2.292m0-14.25v14.25"/></svg>
+    StudyAI
+  </div>
+  <div class="topbar-right">
+    <button class="btn-ghost" id="chat-toggle-btn" style="display:none" onclick="toggleChat()">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M7.5 8.25h9m-9 3H12m-9.75 1.51c0 1.6 1.123 2.994 2.707 3.227 1.129.166 2.27.293 3.423.379.35.026.67.21.865.501L12 21l2.755-4.133a1.14 1.14 0 01.865-.501 48.172 48.172 0 003.423-.379c1.584-.233 2.707-1.626 2.707-3.228V6.741c0-1.602-1.123-2.995-2.707-3.228A48.394 48.394 0 0012 3c-2.392 0-4.744.175-7.043.513C3.373 3.746 2.25 5.14 2.25 6.741v6.018z"/></svg>
+      Chat with PDF
+    </button>
+    <button class="btn-ghost" id="export-btn" style="display:none" onclick="openExport()">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M3 16.5v2.25A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75V16.5M16.5 12L12 16.5m0 0L7.5 12m4.5 4.5V3"/></svg>
+      Export
+    </button>
+  </div>
+</header>
+
+<!-- ── Sidebar ── -->
+<aside class="sidebar">
+  <div class="sidebar-section">Navigation</div>
+  <button class="sidebar-btn active" onclick="showHome()">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M2.25 12l8.954-8.955a1.126 1.126 0 011.591 0L21.75 12M4.5 9.75v10.125c0 .621.504 1.125 1.125 1.125H9.75v-4.875c0-.621.504-1.125 1.125-1.125h2.25c.621 0 1.125.504 1.125 1.125V21h4.125c.621 0 1.125-.504 1.125-1.125V9.75M8.25 21h8.25"/></svg>
+    Upload new PDF
+  </button>
+
+  <div class="sidebar-section" style="margin-top:16px">Study history</div>
+  <div id="history-list">
+    <div style="font-size:12px;color:var(--text3);padding:8px 12px">No history yet</div>
+  </div>
+</aside>
+
+<!-- ── Main ── -->
+<main class="main" id="main-content">
+
+  <!-- Home / Upload -->
+  <div id="home-view" class="home">
+    <div class="home-hero">
+      <h1>Your personal<br/><span>study assistant</span></h1>
+      <p>Upload any PDF and get structured notes, flashcards, quizzes, or a mind map — tailored to how you study best.</p>
+    </div>
+
+    <div class="drop-zone" id="drop-zone">
+      <input type="file" id="file-input" accept=".pdf" onchange="onFileSelect(this.files[0])"/>
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.2"><path d="M19.5 14.25v-2.625a3.375 3.375 0 00-3.375-3.375h-1.5A1.125 1.125 0 0113.5 7.125v-1.5a3.375 3.375 0 00-3.375-3.375H8.25m2.25 0H5.625c-.621 0-1.125.504-1.125 1.125v17.25c0 .621.504 1.125 1.125 1.125h12.75c.621 0 1.125-.504 1.125-1.125V11.25a9 9 0 00-9-9z"/></svg>
+      <h3>Drop your PDF here</h3>
+      <p>or click to browse · Max 20MB</p>
+    </div>
+
+    <div class="file-selected" id="file-selected">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M19.5 14.25v-2.625a3.375 3.375 0 00-3.375-3.375h-1.5A1.125 1.125 0 0113.5 7.125v-1.5a3.375 3.375 0 00-3.375-3.375H8.25m0 12.75h7.5m-7.5 3H12M10.5 2.25H5.625c-.621 0-1.125.504-1.125 1.125v17.25c0 .621.504 1.125 1.125 1.125h12.75c.621 0 1.125-.504 1.125-1.125V11.25a9 9 0 00-9-9z"/></svg>
+      <span id="file-name">No file selected</span>
+      <button class="btn-ghost" style="padding:4px 8px;font-size:12px" onclick="clearFile()">✕</button>
+    </div>
+
+    <div class="section-label">Choose study format</div>
+    <div class="mode-grid">
+      <label class="mode-card selected">
+        <input type="radio" name="mode" value="notes" checked onchange="setMode(this.value)"/>
+        <div class="mode-card-icon">📄</div>
+        <h4>Structured notes</h4>
+        <p>Organized sections with key terms and takeaways</p>
+      </label>
+      <label class="mode-card">
+        <input type="radio" name="mode" value="flashcards" onchange="setMode(this.value)"/>
+        <div class="mode-card-icon">🃏</div>
+        <h4>Flashcards</h4>
+        <p>Flip cards for active recall practice</p>
+      </label>
+      <label class="mode-card">
+        <input type="radio" name="mode" value="quiz" onchange="setMode(this.value)"/>
+        <div class="mode-card-icon">🧠</div>
+        <h4>Quiz / MCQs</h4>
+        <p>Test yourself with multiple choice questions</p>
+      </label>
+      <label class="mode-card">
+        <input type="radio" name="mode" value="mindmap" onchange="setMode(this.value)"/>
+        <div class="mode-card-icon">🗺️</div>
+        <h4>Mind map</h4>
+        <p>Visual topic map with branches and subtopics</p>
+      </label>
+    </div>
+
+    <button class="btn-primary" id="generate-btn" onclick="generate()" disabled>
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9.813 15.904L9 18.75l-.813-2.846a4.5 4.5 0 00-3.09-3.09L2.25 12l2.846-.813a4.5 4.5 0 003.09-3.09L9 5.25l.813 2.846a4.5 4.5 0 003.09 3.09L15.75 12l-2.846.813a4.5 4.5 0 00-3.09 3.09z"/></svg>
+      Generate study material
+    </button>
+  </div>
+
+  <!-- Loading -->
+  <div id="loading-view" class="loading-screen">
+    <div class="spinner"></div>
+    <p style="font-family:var(--serif);font-size:20px;margin-bottom:8px">Analyzing your document…</p>
+    <p style="font-size:13px;color:var(--text3)">This takes about 15–30 seconds</p>
+    <div class="loading-steps">
+      <div class="loading-step active" id="step-1"><div class="step-dot"></div>Uploading PDF</div>
+      <div class="loading-step" id="step-2"><div class="step-dot"></div>Reading document</div>
+      <div class="loading-step" id="step-3"><div class="step-dot"></div>Generating study material</div>
+      <div class="loading-step" id="step-4"><div class="step-dot"></div>Formatting output</div>
+    </div>
+  </div>
+
+  <!-- Result views injected here -->
+  <div id="result-view" style="display:none"></div>
+
+</main>
+</div>
+
+<!-- ── Chat panel ── -->
+<div class="chat-panel" id="chat-panel">
+  <div class="chat-header">
+    <h3>Chat with your PDF</h3>
+    <button class="btn-ghost" style="padding:6px" onclick="toggleChat()">✕</button>
+  </div>
+  <div class="chat-messages" id="chat-messages">
+    <div class="chat-msg ai">Hi! Ask me anything about your document. I'll answer based on what's in the PDF.</div>
+  </div>
+  <div class="chat-input-row">
+    <textarea class="chat-input" id="chat-input" placeholder="Ask a question…" rows="1" onkeydown="chatKeydown(event)"></textarea>
+    <button class="chat-send" onclick="sendChat()">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 12L3.269 3.126A59.768 59.768 0 0121.485 12 59.77 59.77 0 013.27 20.876L5.999 12zm0 0h7.5"/></svg>
+    </button>
+  </div>
+</div>
+
+<!-- ── Explain popup ── -->
+<div class="explain-popup" id="explain-popup">
+  <button class="explain-close" onclick="closeExplain()">✕</button>
+  <h4>✦ Explain</h4>
+  <p id="explain-text">Loading…</p>
+</div>
+
+<!-- ── Export modal ── -->
+<div class="modal-overlay" id="export-modal" onclick="closeExport(event)">
+  <div class="modal">
+    <h3>Export notes</h3>
+    <p>Choose how you'd like to save your study material</p>
+    <div class="export-options">
+      <div class="export-opt" onclick="exportAs('pdf')">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M19.5 14.25v-2.625a3.375 3.375 0 00-3.375-3.375h-1.5A1.125 1.125 0 0113.5 7.125v-1.5a3.375 3.375 0 00-3.375-3.375H8.25m0 12.75h7.5m-7.5 3H12M10.5 2.25H5.625c-.621 0-1.125.504-1.125 1.125v17.25c0 .621.504 1.125 1.125 1.125h12.75c.621 0 1.125-.504 1.125-1.125V11.25a9 9 0 00-9-9z"/></svg>
+        Download as PDF
+      </div>
+      <div class="export-opt" onclick="exportAs('markdown')">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M17.25 6.75L22.5 12l-5.25 5.25m-10.5 0L1.5 12l5.25-5.25m7.5-3l-4.5 16.5"/></svg>
+        Download as Markdown
+      </div>
+      <div class="export-opt" onclick="exportAs('notion')">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M13.5 6H5.25A2.25 2.25 0 003 8.25v10.5A2.25 2.25 0 005.25 21h10.5A2.25 2.25 0 0018 18.75V10.5m-10.5 6L21 3m0 0h-5.25M21 3v5.25"/></svg>
+        Copy for Notion
+      </div>
+    </div>
+    <button class="btn-secondary" style="width:100%" onclick="closeExport()">Cancel</button>
+  </div>
+</div>
+
+<!-- ── Toast ── -->
+<div class="toast" id="toast"></div>
+
+<script>
+const API = 'http://localhost:8000';
+let currentFile = null;
+let currentMode = 'notes';
+let currentSession = null;
+let currentData = null;
+let quizAnswers = {};
+
+// ── Drag & drop ──────────────────────────────────────────────────────────────
+const dz = document.getElementById('drop-zone');
+dz.addEventListener('dragover', e => { e.preventDefault(); dz.classList.add('drag'); });
+dz.addEventListener('dragleave', () => dz.classList.remove('drag'));
+dz.addEventListener('drop', e => {
+  e.preventDefault(); dz.classList.remove('drag');
+  const f = e.dataTransfer.files[0];
+  if (f && f.name.endsWith('.pdf')) onFileSelect(f);
+  else showToast('Please drop a PDF file', false);
+});
+
+function onFileSelect(file) {
+  if (!file) return;
+  currentFile = file;
+  document.getElementById('file-name').textContent = file.name;
+  document.getElementById('file-selected').style.display = 'flex';
+  document.getElementById('generate-btn').disabled = false;
+}
+
+function clearFile() {
+  currentFile = null;
+  document.getElementById('file-input').value = '';
+  document.getElementById('file-selected').style.display = 'none';
+  document.getElementById('generate-btn').disabled = true;
+}
+
+function setMode(val) {
+  currentMode = val;
+  document.querySelectorAll('.mode-card').forEach(c => c.classList.remove('selected'));
+  document.querySelector(`input[value="${val}"]`).parentElement.classList.add('selected');
+}
+
+// ── Generate ─────────────────────────────────────────────────────────────────
+async function generate() {
+  if (!currentFile) return;
+  showView('loading');
+  let step = 1;
+  const stepInterval = setInterval(() => {
+    if (step > 1) { const prev = document.getElementById(`step-${step-1}`); prev.classList.remove('active'); prev.classList.add('done'); }
+    if (step <= 4) { document.getElementById(`step-${step}`).classList.add('active'); step++; }
+    else clearInterval(stepInterval);
+  }, 3500);
+
+  try {
+    const fd = new FormData();
+    fd.append('file', currentFile);
+    const res = await fetch(`${API}/api/upload?mode=${currentMode}`, { method:'POST', body:fd });
+    clearInterval(stepInterval);
+    if (!res.ok) { const err = await res.json(); throw new Error(err.detail || 'Upload failed'); }
+    currentData = await res.json();
+    currentSession = currentData.session_id;
+    renderResult(currentData, currentMode);
+    loadHistory();
+    document.getElementById('chat-toggle-btn').style.display = 'flex';
+    document.getElementById('export-btn').style.display = 'flex';
+  } catch(e) {
+    clearInterval(stepInterval);
+    showView('home');
+    showToast('Error: ' + e.message, false);
+  }
+}
+
+// ── Render ───────────────────────────────────────────────────────────────────
+function renderResult(data, mode) {
+  const el = document.getElementById('result-view');
+  let html = `<div class="result-wrap">
+    <div class="result-header">
+      <div class="result-header-left">
+        <h2>${data.title || 'Study Material'}</h2>
+        <div class="meta">
+          <span class="mode-badge badge-${mode}">${mode}</span>
+          <span>·</span>
+          <span>${data.subject || 'General'}</span>
+          <span>·</span>
+          <span>${data.filename}</span>
+        </div>
+      </div>
+      <div class="result-actions">
+        <button class="btn-ghost" onclick="showHome()">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M12 4.5v15m7.5-7.5h-15"/></svg>
+          New PDF
+        </button>
+      </div>
+    </div>
+    <div class="summary-box">${data.summary || ''}</div>`;
+
+  if (mode === 'notes') html += renderNotes(data);
+  else if (mode === 'flashcards') html += renderFlashcards(data);
+  else if (mode === 'quiz') html += renderQuiz(data);
+  else if (mode === 'mindmap') html += renderMindmap(data);
+
+  html += '</div>';
+  el.innerHTML = html;
+  showView('result');
+
+  if (mode === 'notes') enableHighlight();
+  if (mode === 'mindmap') setTimeout(() => drawMindmap(data), 100);
+  if (mode === 'quiz') setupQuiz(data);
+}
+
+function renderNotes(data) {
+  let html = '';
+  if (data.sections) {
+    data.sections.forEach((s, i) => {
+      html += `<div class="notes-section">
+        <div class="notes-section-header" onclick="toggleSection(${i})">
+          <h3>§ ${s.heading}</h3>
+          <svg id="chevron-${i}" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" style="transition:.2s;flex-shrink:0"><path d="M19.5 8.25l-7.5 7.5-7.5-7.5"/></svg>
+        </div>
+        <div class="notes-section-body" id="section-body-${i}">
+          <p>${s.content}</p>
+          ${s.key_terms?.length ? `<div class="key-terms">${s.key_terms.map(t => `<span class="key-term highlighted-term" onclick="explainTerm('${t.replace(/'/g,"\\'")}')">⚡ ${t}</span>`).join('')}</div>` : ''}
+        </div>
+      </div>`;
+    });
+  }
+  if (data.key_takeaways?.length) {
+    html += `<div class="notes-section">
+      <div class="notes-section-header" onclick="toggleSection('tk')">
+        <h3>✦ Key takeaways</h3>
+        <svg id="chevron-tk" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M19.5 8.25l-7.5 7.5-7.5-7.5"/></svg>
+      </div>
+      <div class="notes-section-body" id="section-body-tk">
+        <ul class="takeaways">${data.key_takeaways.map(t => `<li>${t}</li>`).join('')}</ul>
+      </div>
+    </div>`;
+  }
+  return html;
+}
+
+function renderFlashcards(data) {
+  let html = `<div class="flip-hint"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M15.042 21.672L13.684 16.6m0 0l-2.51 2.225.569-9.47 5.227 6.706-3.286.539zm-7.23-2.088c-.837.375-1.605.5-2.292.44A6.005 6.005 0 011.5 12c0-3.314 2.686-6 6-6 2.137 0 4.026 1.11 5.12 2.79"/></svg> Click any card to flip it</div>
+    <div class="flashcard-grid">`;
+  data.flashcards?.forEach((fc, i) => {
+    html += `<div class="flashcard" onclick="this.classList.toggle('flipped')">
+      <div class="flashcard-inner">
+        <div class="flashcard-face flashcard-front">
+          <div class="face-label">Question</div>
+          <p>${fc.front}</p>
+          <span class="diff-badge diff-${fc.difficulty || 'medium'}">${fc.difficulty || 'medium'}</span>
+        </div>
+        <div class="flashcard-face flashcard-back">
+          <div class="face-label">Answer</div>
+          <p>${fc.back}</p>
+        </div>
+      </div>
+    </div>`;
+  });
+  html += '</div>';
+  return html;
+}
+
+function renderQuiz(data) {
+  let html = `<div class="quiz-score" id="quiz-score">
+    <div class="score-big" id="score-big">0/0</div>
+    <div class="score-label">Complete the quiz to see your score</div>
+    <button class="btn-secondary" style="margin-top:16px" onclick="resetQuiz()">Try again</button>
+  </div>`;
+  data.questions?.forEach((q, i) => {
+    html += `<div class="quiz-question" id="qcard-${i}">
+      <div class="quiz-q-num">Question ${i+1} of ${data.questions.length}</div>
+      <div class="quiz-q-text">${q.question}</div>
+      <div class="quiz-options">
+        ${q.options.map((opt, oi) => {
+          const key = opt.charAt(0);
+          return `<div class="quiz-option" id="qopt-${i}-${oi}" onclick="answerQuiz(${i}, '${key}', '${q.answer}', this, ${JSON.stringify(q.options).replace(/"/g,"'")})">
+            <span class="opt-key">${key}</span>
+            ${opt.substring(3)}
+          </div>`;
+        }).join('')}
+      </div>
+      <div class="quiz-explanation" id="qexp-${i}">${q.explanation}</div>
+    </div>`;
+  });
+  return html;
+}
+
+function renderMindmap(data) {
+  return `<canvas id="mindmap-canvas" height="500"></canvas>`;
+}
+
+// ── Notes interactions ────────────────────────────────────────────────────────
+function toggleSection(id) {
+  const body = document.getElementById(`section-body-${id}`);
+  const chev = document.getElementById(`chevron-${id}`);
+  const isOpen = body.style.display !== 'none';
+  body.style.display = isOpen ? 'none' : 'block';
+  chev.style.transform = isOpen ? 'rotate(-90deg)' : 'rotate(0)';
+}
+
+function enableHighlight() {
+  document.getElementById('result-view').addEventListener('mouseup', () => {
+    const sel = window.getSelection();
+    const txt = sel?.toString().trim();
+    if (txt && txt.length > 10 && txt.length < 500) showExplainPopup(txt);
+  });
+}
+
+async function explainTerm(term) { showExplainPopup(term); }
+
+async function showExplainPopup(text) {
+  const popup = document.getElementById('explain-popup');
+  document.getElementById('explain-text').textContent = 'Thinking…';
+  popup.classList.add('show');
+  try {
+    const res = await fetch(`${API}/api/explain`, {
+      method:'POST', headers:{'Content-Type':'application/json'},
+      body: JSON.stringify({ session_id: currentSession, selected_text: text })
+    });
+    const data = await res.json();
+    document.getElementById('explain-text').textContent = data.explanation;
+  } catch(e) {
+    document.getElementById('explain-text').textContent = 'Could not load explanation. Make sure the backend is running.';
+  }
+}
+
+function closeExplain() { document.getElementById('explain-popup').classList.remove('show'); }
+
+// ── Quiz interactions ─────────────────────────────────────────────────────────
+function setupQuiz() { quizAnswers = {}; }
+
+function answerQuiz(qi, chosen, correct, el, opts) {
+  if (quizAnswers[qi] !== undefined) return;
+  quizAnswers[qi] = chosen;
+  const isCorrect = chosen === correct;
+  el.classList.add(isCorrect ? 'correct' : 'wrong');
+  if (!isCorrect) {
+    const allOpts = el.parentElement.querySelectorAll('.quiz-option');
+    allOpts.forEach((o, oi) => {
+      const key = opts[oi].charAt(0);
+      if (key === correct) o.classList.add('correct');
+    });
+  }
+  el.parentElement.querySelectorAll('.quiz-option').forEach(o => o.classList.add('disabled'));
+  document.getElementById(`qexp-${qi}`).classList.add('show');
+  checkQuizComplete();
+}
+
+function checkQuizComplete() {
+  const total = currentData.questions?.length || 0;
+  if (Object.keys(quizAnswers).length === total) {
+    const correct = Object.entries(quizAnswers).filter(([qi, ans]) => ans === currentData.questions[qi].answer).length;
+    document.getElementById('score-big').textContent = `${correct}/${total}`;
+    document.getElementById('quiz-score').classList.add('show');
+    document.getElementById('quiz-score').scrollIntoView({ behavior:'smooth' });
+  }
+}
+
+function resetQuiz() {
+  renderResult(currentData, 'quiz');
+}
+
+// ── Mind map canvas ───────────────────────────────────────────────────────────
+function drawMindmap(data) {
+  const canvas = document.getElementById('mindmap-canvas');
+  if (!canvas) return;
+  const ctx = canvas.getContext('2d');
+  canvas.width = canvas.offsetWidth;
+  canvas.height = 500;
+  const W = canvas.width, H = canvas.height;
+  const cx = W / 2, cy = H / 2;
+
+  ctx.fillStyle = '#15171a';
+  ctx.fillRect(0, 0, W, H);
+
+  const branches = data.branches || [];
+  const angleStep = (Math.PI * 2) / branches.length;
+  const colors = ['#c8a96e','#5b9bd5','#4caf82','#9b7fd4','#d45b5b','#e8c98a'];
+
+  // Center
+  ctx.beginPath();
+  ctx.arc(cx, cy, 44, 0, Math.PI*2);
+  ctx.fillStyle = '#c8a96e';
+  ctx.fill();
+  ctx.fillStyle = '#0e0f11';
+  ctx.font = 'bold 13px "DM Sans"';
+  ctx.textAlign = 'center';
+  ctx.textBaseline = 'middle';
+  const centerText = data.central_topic || data.title || 'Main Topic';
+  wrapText(ctx, centerText, cx, cy, 76, 16);
+
+  branches.forEach((branch, i) => {
+    const angle = angleStep * i - Math.PI / 2;
+    const bx = cx + Math.cos(angle) * 160;
+    const by = cy + Math.sin(angle) * 130;
+    const color = branch.color || colors[i % colors.length];
+
+    // Line to branch
+    ctx.beginPath();
+    ctx.moveTo(cx + Math.cos(angle)*44, cy + Math.sin(angle)*44);
+    ctx.lineTo(bx, by);
+    ctx.strokeStyle = color;
+    ctx.lineWidth = 2;
+    ctx.stroke();
+
+    // Branch node
+    ctx.beginPath();
+    ctx.arc(bx, by, 30, 0, Math.PI*2);
+    ctx.fillStyle = color + '22';
+    ctx.fill();
+    ctx.strokeStyle = color;
+    ctx.lineWidth = 1.5;
+    ctx.stroke();
+    ctx.fillStyle = color;
+    ctx.font = '500 11px "DM Sans"';
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'middle';
+    wrapText(ctx, branch.name, bx, by, 52, 13);
+
+    // Sub-topics
+    const subs = branch.subtopics || [];
+    const subAngleStep = Math.PI / Math.max(subs.length, 1);
+    const baseAngle = angle - (subAngleStep * (subs.length - 1)) / 2;
+    subs.slice(0, 3).forEach((sub, si) => {
+      const subAngle = baseAngle + subAngleStep * si;
+      const sx = bx + Math.cos(subAngle) * 100;
+      const sy = by + Math.sin(subAngle) * 80;
+      ctx.beginPath();
+      ctx.moveTo(bx + Math.cos(subAngle)*30, by + Math.sin(subAngle)*30);
+      ctx.lineTo(sx, sy);
+      ctx.strokeStyle = color + '66';
+      ctx.lineWidth = 1;
+      ctx.setLineDash([4,4]);
+      ctx.stroke();
+      ctx.setLineDash([]);
+      ctx.beginPath();
+      roundRect(ctx, sx-42, sy-14, 84, 28, 6);
+      ctx.fillStyle = '#1c1f24';
+      ctx.fill();
+      ctx.strokeStyle = color + '55';
+      ctx.lineWidth = 1;
+      ctx.stroke();
+      ctx.fillStyle = '#9a9da6';
+      ctx.font = '11px "DM Sans"';
+      ctx.textAlign = 'center';
+      ctx.textBaseline = 'middle';
+      const subName = sub.name?.length > 14 ? sub.name.substring(0,13)+'…' : sub.name;
+      ctx.fillText(subName, sx, sy);
+    });
+  });
+}
+
+function wrapText(ctx, text, x, y, maxW, lineH) {
+  const words = text.split(' ');
+  let line = '', lines = [];
+  words.forEach(w => {
+    const test = line + w + ' ';
+    if (ctx.measureText(test).width > maxW && line) { lines.push(line.trim()); line = w + ' '; }
+    else line = test;
+  });
+  lines.push(line.trim());
+  const startY = y - (lines.length - 1) * lineH / 2;
+  lines.forEach((l, i) => ctx.fillText(l, x, startY + i * lineH));
+}
+
+function roundRect(ctx, x, y, w, h, r) {
+  ctx.beginPath();
+  ctx.moveTo(x+r, y);
+  ctx.lineTo(x+w-r, y);
+  ctx.arcTo(x+w, y, x+w, y+r, r);
+  ctx.lineTo(x+w, y+h-r);
+  ctx.arcTo(x+w, y+h, x+w-r, y+h, r);
+  ctx.lineTo(x+r, y+h);
+  ctx.arcTo(x, y+h, x, y+h-r, r);
+  ctx.lineTo(x, y+r);
+  ctx.arcTo(x, y, x+r, y, r);
+  ctx.closePath();
+}
+
+// ── Chat ─────────────────────────────────────────────────────────────────────
+let chatHistory = [];
+function toggleChat() {
+  document.getElementById('chat-panel').classList.toggle('open');
+}
+function chatKeydown(e) {
+  if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); sendChat(); }
+}
+async function sendChat() {
+  const inp = document.getElementById('chat-input');
+  const msg = inp.value.trim();
+  if (!msg || !currentSession) return;
+  inp.value = '';
+  addChatMsg(msg, 'user');
+  chatHistory.push({ role:'user', content:msg });
+  const typing = addChatMsg('…', 'ai typing');
+  try {
+    const res = await fetch(`${API}/api/chat`, {
+      method:'POST', headers:{'Content-Type':'application/json'},
+      body: JSON.stringify({ session_id:currentSession, message:msg, history:chatHistory.slice(-8) })
+    });
+    const data = await res.json();
+    typing.remove();
+    addChatMsg(data.reply, 'ai');
+    chatHistory.push({ role:'assistant', content:data.reply });
+  } catch(e) {
+    typing.remove();
+    addChatMsg('Connection error — is the backend running?', 'ai');
+  }
+}
+function addChatMsg(text, role) {
+  const el = document.createElement('div');
+  el.className = `chat-msg ${role}`;
+  el.textContent = text;
+  const msgs = document.getElementById('chat-messages');
+  msgs.appendChild(el);
+  msgs.scrollTop = msgs.scrollHeight;
+  return el;
+}
+
+// ── Export ────────────────────────────────────────────────────────────────────
+function openExport() { document.getElementById('export-modal').classList.add('show'); }
+function closeExport(e) {
+  if (!e || e.target === document.getElementById('export-modal'))
+    document.getElementById('export-modal').classList.remove('show');
+}
+function exportAs(type) {
+  closeExport();
+  if (!currentData) return;
+  if (type === 'markdown') {
+    const md = dataToMarkdown(currentData, currentMode);
+    download('study-notes.md', md, 'text/markdown');
+    showToast('Markdown downloaded!');
+  } else if (type === 'notion') {
+    const md = dataToMarkdown(currentData, currentMode);
+    navigator.clipboard.writeText(md).then(() => showToast('Copied to clipboard — paste into Notion!'));
+  } else if (type === 'pdf') {
+    window.print();
+  }
+}
+function dataToMarkdown(data, mode) {
+  let md = `# ${data.title}\n\n> ${data.summary}\n\n**Subject:** ${data.subject}\n\n---\n\n`;
+  if (mode === 'notes' && data.sections) {
+    data.sections.forEach(s => {
+      md += `## ${s.heading}\n\n${s.content}\n\n`;
+      if (s.key_terms?.length) md += `**Key terms:** ${s.key_terms.join(', ')}\n\n`;
+    });
+    if (data.key_takeaways?.length) {
+      md += `## Key Takeaways\n\n${data.key_takeaways.map(t => `- ${t}`).join('\n')}\n`;
+    }
+  } else if (mode === 'flashcards' && data.flashcards) {
+    data.flashcards.forEach((fc, i) => {
+      md += `### Card ${i+1}\n\n**Q:** ${fc.front}\n\n**A:** ${fc.back}\n\n---\n\n`;
+    });
+  } else if (mode === 'quiz' && data.questions) {
+    data.questions.forEach((q, i) => {
+      md += `### Q${i+1}: ${q.question}\n\n${q.options.map(o => `- ${o}`).join('\n')}\n\n**Answer:** ${q.answer}\n\n*${q.explanation}*\n\n---\n\n`;
+    });
+  }
+  return md;
+}
+function download(name, content, type) {
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(new Blob([content], { type }));
+  a.download = name;
+  a.click();
+}
+
+// ── History ───────────────────────────────────────────────────────────────────
+async function loadFromHistory(sessionId, mode) {
+  // Reset loading steps first
+  for (let i=1;i<=4;i++) {
+    const s = document.getElementById(`step-${i}`);
+    s.classList.remove('active','done');
+  }
+  document.getElementById('step-1').classList.add('active');
+  showView('loading');
+
+  try {
+    const res = await fetch(`${API}/api/reload`, {
+      method: 'POST',
+      headers: {'Content-Type': 'application/json'},
+      body: JSON.stringify({ session_id: sessionId, mode: mode })
+    });
+
+    if (!res.ok) {
+      const err = await res.json();
+      showView('home');
+      showToast('Could not reload: ' + (err.detail || 'PDF may be gone, re-upload it.'), false);
+      return;
+    }
+
+    const data = await res.json();
+    currentSession = sessionId;
+    currentData = data;
+    currentMode = mode;
+    renderResult(data, mode);
+    document.getElementById('chat-toggle-btn').style.display = 'flex';
+    document.getElementById('export-btn').style.display = 'flex';
+
+  } catch(e) {
+    showView('home');
+    showToast('Network error: ' + e.message, false);
+  }
+}
+
+
+// ── View management ───────────────────────────────────────────────────────────
+function showView(view) {
+  document.getElementById('home-view').style.display = view === 'home' ? 'block' : 'none';
+  document.getElementById('loading-view').className = view === 'loading' ? 'loading-screen show' : 'loading-screen';
+  document.getElementById('result-view').style.display = view === 'result' ? 'block' : 'none';
+}
+
+function showHome() {
+  showView('home');
+  document.getElementById('chat-toggle-btn').style.display = 'none';
+  document.getElementById('export-btn').style.display = 'none';
+  document.getElementById('chat-panel').classList.remove('open');
+  currentSession = null; currentData = null;
+  // Reset loading steps
+  for (let i=1;i<=4;i++) {
+    const s = document.getElementById(`step-${i}`);
+    s.classList.remove('active','done');
+  }
+}
+
+// ── Toast ─────────────────────────────────────────────────────────────────────
+function showToast(msg, success=true) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.className = 'toast show' + (success ? ' success' : '');
+  setTimeout(() => t.className = 'toast', 3000);
+}
+
+// ── Init ──────────────────────────────────────────────────────────────────────
+// ── Init ──────────────────────────────────────────────────────────────────
+async function loadHistory() {
+  try {
+    const res = await fetch(`${API}/api/history`);
+    const hist = await res.json();
+    const el = document.getElementById('history-list');
+    if (!hist.length) {
+      el.innerHTML = '<div style="font-size:12px;color:var(--text3);padding:8px 12px">No history yet</div>';
+      return;
+    }
+    el.innerHTML = hist.map(h => `
+      <div class="history-item-wrap">
+        <div class="history-item" style="flex:1" onclick="loadFromHistory('${h.session_id}', '${h.mode}')">
+          <span class="hi-title">${h.title}</span>
+          <div class="hi-meta">
+            <span class="mode-badge badge-${h.mode}">${h.mode}</span>
+            <span>${h.subject}</span>
+          </div>
+        </div>
+        <button class="hi-del" title="Delete" onclick="deleteHistory('${h.session_id}')">✕</button>
+      </div>`).join('');
+  } catch(e) {}
+}
+
+async function deleteHistory(sessionId) {
+  try {
+    await fetch(`${API}/api/history/${sessionId}`, { method: 'DELETE' });
+    if (currentSession === sessionId) showHome();
+    loadHistory();
+    showToast('Deleted from history');
+  } catch(e) {
+    showToast('Could not delete', false);
+  }
+}
+
+loadHistory();
+</script>
+</body>
+</html>

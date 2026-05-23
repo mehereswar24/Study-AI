@@ -1,0 +1,10 @@
+.venv/
+venv/
+__pycache__/
+*.pyc
+.env
+uploads/
+history.json
+.DS_Store
+.code-review-graph/
+.vscode/
