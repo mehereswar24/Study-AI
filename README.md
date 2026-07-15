@@ -1,52 +1,88 @@
-# 📚 StudyAI - Intelligent Study Companion
+# 🎓 Study-AI
 
-StudyAI is a powerful tool that transforms your PDF documents into structured study material. Using advanced AI, it can generate notes, flashcards, quizzes, and mind maps to help you learn more effectively.
-
-## ✨ Features
-- **Structured Notes**: Concise summaries and key terms.
-- **Interactive Flashcards**: Test your knowledge with front/back cards.
-- **AI Quizzes**: Multiple-choice questions with instant feedback and scoring.
-- **Visual Mind Maps**: Conceptual hierarchies of your documents.
-- **Deep Explanation**: Select any text to get a simplified AI explanation.
-- **Document Chat**: Ask specific questions about your uploaded PDFs.
-
-## 🚀 How to Host
-
-### 1. Environment Variables
-Create a `.env` file in the root directory and add your API keys:
-```env
-GROQ_API_KEY=your_groq_api_key_here
-GROQ_MODEL=llama-3.3-70b-versatile
-```
-
-### 2. Manual Setup
-1. **Frontend**:
-   ```bash
-   cd frontend
-   npm install
-   npm run build
-   ```
-2. **Backend**:
-   ```bash
-   pip install -r requirements.txt
-   uvicorn main:app --host 0.0.0.0 --port 8000
-   ```
-
-### 3. Docker (Recommended)
-The project includes a multi-stage `Dockerfile` for easy deployment.
-```bash
-docker build -t study-ai .
-docker run -p 8000:8000 --env-file .env study-ai
-```
-
-## 🛠 Tech Stack
-- **Frontend**: React, CSS (Glassmorphism & Claude-inspired design)
-- **Backend**: FastAPI (Python)
-- **AI**: Groq (Llama 3.3)
-- **Processing**: PyPDF for text extraction
-
-## 🧹 Maintenance
-The server automatically cleans up uploaded PDFs older than 24 hours on startup to maintain disk space.
+**Study-AI** is an AI-powered study assistant that lets you upload a PDF document and have an intelligent conversation with it. Powered by **Groq's blazing-fast LLaMA inference** and a clean, self-contained web UI — it's your personal tutor for any document.
 
 ---
-Built with ❤️ for better learning.
+
+## ✨ Features
+
+- **📄 PDF Upload & Parsing**: Upload any PDF and the app extracts and indexes its full text automatically.
+- **💬 Contextual Chat**: Ask questions about your document and get accurate, context-aware answers powered by LLaMA 3.3 70B.
+- **📚 Session History**: Previous conversations are persisted across sessions via a local `history.json` file.
+- **🧹 Auto-Cleanup**: Uploaded PDFs older than 24 hours are automatically purged to save disk space.
+- **🚀 Fast Inference**: Powered by [Groq](https://groq.com/) — one of the fastest LLM inference APIs available.
+- **🐳 Docker Ready**: Includes a `Dockerfile` for one-command containerized deployment.
+
+---
+
+## 🛠️ Tech Stack
+
+| Layer | Technology |
+|---|---|
+| **Backend** | Python, FastAPI |
+| **LLM** | Groq API (LLaMA 3.3 70B Versatile) |
+| **PDF Parsing** | pypdf |
+| **Frontend** | Vanilla HTML/CSS/JS (served as static files) |
+| **Containerization** | Docker |
+
+---
+
+## 🚀 Quickstart
+
+### 1. Get a Groq API Key
+
+Sign up at [console.groq.com](https://console.groq.com) and grab a free API key.
+
+### 2. Set Up the Project
+
+```bash
+# Clone the repo
+git clone https://github.com/mehereswar24/Study-AI.git
+cd Study-AI
+
+# Create a virtual environment
+python -m venv .venv
+source .venv/bin/activate  # On Windows: .venv\Scripts\activate
+
+# Install dependencies
+pip install -r requirements.txt
+
+# Create your environment file
+cp .env.example .env
+# Add your GROQ_API_KEY to the .env file
+```
+
+### 3. Run the App
+
+```bash
+uvicorn main:app --reload
+```
+
+Open your browser at `http://localhost:8000`.
+
+---
+
+### 🐳 Run with Docker
+
+```bash
+docker build -t study-ai .
+docker run -p 8000:8000 -e GROQ_API_KEY=your_key_here study-ai
+```
+
+---
+
+## 📂 Project Structure
+
+```text
+Study-AI/
+├── main.py             # FastAPI backend and all API endpoints
+├── frontend/           # Static HTML/CSS/JS frontend
+├── uploads/            # Temporary storage for uploaded PDFs (auto-cleaned)
+├── history.json        # Persisted chat session history
+├── requirements.txt    # Python dependencies
+└── Dockerfile          # Container configuration
+```
+
+---
+
+**Upload. Ask. Learn. 🚀**
