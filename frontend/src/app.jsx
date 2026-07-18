@@ -1,4 +1,5 @@
 import { useState, useEffect, useRef, useCallback } from "react";
+import AuthScreen from "./AuthScreen";
 
 const API = "";
 
@@ -6,41 +7,41 @@ const API = "";
   if (document.getElementById("sai-fonts")) return;
   const l = document.createElement("link");
   l.id = "sai-fonts"; l.rel = "stylesheet";
-  l.href = "https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,500;0,600;0,700;1,400;1,500&family=Outfit:wght@300;400;500;600;700&family=Fira+Code:wght@400;500&display=swap";
+  l.href = "https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700;800&family=DM+Sans:wght@400;500;600;700&family=Fira+Code:wght@400;500;600&display=swap";
   document.head.appendChild(l);
 })();
 
 // ── Themes ─────────────────────────────────────────────────────────────────────
 const THEMES = {
   dark: {
-    bg: "#1C1917", surface: "#232018", elevated: "#2D2921", overlay: "#36302A",
-    border: "rgba(139,167,201,0.12)", borderHov: "rgba(139,167,201,0.25)", borderAcc: "rgba(139,167,201,0.42)",
-    text: "#F5E6D3", muted: "rgba(245,230,211,0.6)", faint: "rgba(245,230,211,0.32)",
-    acc: "#8BA7C9", accLt: "#A9C2DC", accDk: "#6689AD", accDim: "rgba(139,167,201,0.14)", accGlow: "rgba(139,167,201,0.22)",
-    sec: "#A99DC4", secDim: "rgba(169,157,196,0.12)",
-    success: "#7EB89A", successDim: "rgba(126,184,154,0.1)",
-    danger: "#E06C6C", dangerDim: "rgba(224,108,108,0.1)",
-    gold: "#8BA7C9", goldDim: "rgba(139,167,201,0.1)",
-    shadow: "0 0 0 1px rgba(139,167,201,0.06), 0 24px 80px rgba(0,0,0,0.55)",
-    shadowSm: "0 4px 20px rgba(0,0,0,0.3)",
-    particleCol: "rgba(139,167,201,",
-    particleCol2: "rgba(169,157,196,",
-    sidebarBg: "rgba(28,25,23,0.92)",
+    bg: "#000000", surface: "#0A0A0A", elevated: "#141414", overlay: "#1F1F1F",
+    border: "rgba(255,255,255,0.1)", borderHov: "rgba(255,255,255,0.25)", borderAcc: "rgba(255,255,255,0.4)",
+    text: "#FFFFFF", muted: "#A1A1AA", faint: "#52525B",
+    acc: "#FFFFFF", accLt: "#E4E4E7", accDk: "#D4D4D8", accDim: "rgba(255,255,255,0.12)", accGlow: "rgba(255,255,255,0.3)",
+    sec: "#D4D4D8", secDim: "rgba(255,255,255,0.08)",
+    success: "#FFFFFF", successDim: "rgba(255,255,255,0.15)",
+    danger: "#FFFFFF", dangerDim: "rgba(255,255,255,0.15)",
+    gold: "#FFFFFF", goldDim: "rgba(255,255,255,0.15)",
+    shadow: "0 0 0 1px rgba(255,255,255,0.08), 0 24px 80px rgba(0,0,0,0.9)",
+    shadowSm: "0 8px 30px rgba(0,0,0,0.7)",
+    particleCol: "rgba(255,255,255,",
+    particleCol2: "rgba(200,200,200,",
+    sidebarBg: "rgba(0,0,0,0.85)",
   },
   light: {
-    bg: "#f7f3e3", surface: "#fffef5", elevated: "#f0ebd0", overlay: "#e8e0c0",
-    border: "rgba(0,54,49,0.08)", borderHov: "rgba(0,54,49,0.2)", borderAcc: "rgba(0,54,49,0.35)",
-    text: "#003631", muted: "rgba(0,54,49,0.6)", faint: "rgba(0,54,49,0.32)",
-    acc: "#003631", accLt: "#005248", accDk: "#002420", accDim: "rgba(0,54,49,0.08)", accGlow: "rgba(0,54,49,0.15)",
-    sec: "#5a3e00", secDim: "rgba(90,62,0,0.08)",
-    success: "#166534", successDim: "rgba(22,101,52,0.08)",
-    danger: "#991b1b", dangerDim: "rgba(153,27,27,0.08)",
-    gold: "#5a3e00", goldDim: "rgba(90,62,0,0.08)",
-    shadow: "0 0 0 1px rgba(0,54,49,0.06), 0 24px 80px rgba(0,54,49,0.12)",
-    shadowSm: "0 4px 20px rgba(0,54,49,0.08)",
-    particleCol: "rgba(0,54,49,",
-    particleCol2: "rgba(90,62,0,",
-    sidebarBg: "rgba(247,243,227,0.7)",
+    bg: "#FFFFFF", surface: "#FAFAFA", elevated: "#F4F4F5", overlay: "#E4E4E7",
+    border: "rgba(0,0,0,0.1)", borderHov: "rgba(0,0,0,0.2)", borderAcc: "rgba(0,0,0,0.35)",
+    text: "#000000", muted: "#52525B", faint: "#A1A1AA",
+    acc: "#000000", accLt: "#18181B", accDk: "#27272A", accDim: "rgba(0,0,0,0.06)", accGlow: "rgba(0,0,0,0.15)",
+    sec: "#3F3F46", secDim: "rgba(0,0,0,0.04)",
+    success: "#000000", successDim: "rgba(0,0,0,0.08)",
+    danger: "#000000", dangerDim: "rgba(0,0,0,0.08)",
+    gold: "#000000", goldDim: "rgba(0,0,0,0.08)",
+    shadow: "0 0 0 1px rgba(0,0,0,0.06), 0 24px 80px rgba(0,0,0,0.1)",
+    shadowSm: "0 8px 30px rgba(0,0,0,0.05)",
+    particleCol: "rgba(0,0,0,",
+    particleCol2: "rgba(80,80,80,",
+    sidebarBg: "rgba(255,255,255,0.85)",
   }
 };
 
@@ -51,10 +52,24 @@ const injectCSS = (theme) => {
   el.textContent = `
     *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
     html,body,#root{height:100%}
-    body{font-family:'Outfit',sans-serif;background:${t.bg};color:${t.text};overflow:hidden;-webkit-font-smoothing:antialiased}
+    body{font-family:'DM Sans',sans-serif;background-color:${t.bg};color:${t.text};overflow:hidden;-webkit-font-smoothing:antialiased}
     ::-webkit-scrollbar{width:3px}::-webkit-scrollbar-track{background:transparent}::-webkit-scrollbar-thumb{background:${t.border};border-radius:2px}
     ::selection{background:${t.accDim};color:${t.acc}}
     input,textarea,button{font-family:inherit}
+    
+    /* Button Aesthetics Override */
+    button { 
+      border-radius: 999px !important; 
+      transition: all 0.25s cubic-bezier(0.16,1,0.3,1) !important;
+    }
+    button:hover:not(:disabled) { 
+      transform: translateY(-2px) scale(1.02);
+      box-shadow: 0 6px 20px ${t.accGlow} !important;
+    }
+    button:active:not(:disabled) { 
+      transform: translateY(1px) scale(0.98); 
+    }
+
     @keyframes fadeUp{from{opacity:0;transform:translateY(20px)}to{opacity:1;transform:translateY(0)}}
     @keyframes fadeIn{from{opacity:0}to{opacity:1}}
     @keyframes slideIn{from{transform:translateX(-100%);opacity:0}to{transform:translateX(0);opacity:1}}
@@ -220,7 +235,7 @@ const P = {
   pause: "M6 4h4v16H6zM14 4h4v16h-4z",
   reset: "M1 4v6h6M23 20v-6h-6M20.49 9A9 9 0 005.64 5.64L1 10M23 14l-4.64 4.36A9 9 0 013.51 15",
   coffee: "M18 8h1a4 4 0 010 8h-1M2 8h16v9a4 4 0 01-4 4H6a4 4 0 01-4-4V8zM6 1v3M10 1v3M14 1v3",
-  brand: "M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5",
+  brand: "M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z M12 0 Q12 4 8 4 Q12 4 12 8 Q12 4 16 4 Q12 4 12 0 Z",
 };
 const Ic = ({ n, size = 16, color = "currentColor", style: s }) => (
   <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" style={s}>
@@ -282,7 +297,7 @@ function Settings({ onClose, theme, setTheme, user, setUser, prefs, setPrefs }) 
     <div onClick={onClose} style={{ position: "fixed", inset: 0, background: "rgba(0,0,0,.75)", zIndex: 500, display: "flex", alignItems: "center", justifyContent: "center", backdropFilter: "blur(14px)" }}>
       <div onClick={e => e.stopPropagation()} className="fu" style={{ width: 560, maxHeight: "80vh", background: t.surface, border: `1px solid ${t.border}`, borderRadius: 22, overflow: "hidden", boxShadow: t.shadow }}>
         <div style={{ padding: "20px 26px", borderBottom: `1px solid ${t.border}`, display: "flex", alignItems: "center", justifyContent: "space-between" }}>
-          <span style={{ fontFamily: "'Playfair Display',serif", fontSize: 22, fontWeight: 600 }}>Settings</span>
+          <span style={{ fontFamily: "'Outfit',sans-serif", fontSize: 22, fontWeight: 600 }}>Settings</span>
           <button onClick={onClose} style={{ background: "none", border: "none", color: t.muted, cursor: "pointer", display: "flex", padding: 4 }}><Ic n="x" size={16} /></button>
         </div>
         <div style={{ display: "flex", height: "calc(80vh - 65px)" }}>
@@ -319,13 +334,13 @@ function Settings({ onClose, theme, setTheme, user, setUser, prefs, setPrefs }) 
             {tab === "account" && (
               <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
                 <div style={{ padding: "20px", background: t.elevated, borderRadius: 14 }}>
-                  <div style={{ width: 48, height: 48, borderRadius: "50%", background: t.accDim, border: `1px solid ${t.borderAcc}`, display: "flex", alignItems: "center", justifyContent: "center", fontFamily: "'Playfair Display',serif", fontSize: 22, color: t.acc, marginBottom: 12 }}>{user.name?.charAt(0).toUpperCase()}</div>
+                  <div style={{ width: 48, height: 48, borderRadius: "50%", background: t.accDim, border: `1px solid ${t.borderAcc}`, display: "flex", alignItems: "center", justifyContent: "center", fontFamily: "'Outfit',sans-serif", fontSize: 22, color: t.acc, marginBottom: 12 }}>{user.name?.charAt(0).toUpperCase()}</div>
                   <div style={{ display: "flex", flexDirection: "column", gap: 4 }}>
                     <label style={{ fontSize: 10, color: t.faint, fontFamily: "'Fira Code',monospace", textTransform: "uppercase" }}>User Name</label>
                     <input 
                       value={user.name} 
                       onChange={e => setUser(u => ({ ...u, name: e.target.value }))}
-                      style={{ background: "transparent", border: "none", borderBottom: `1px solid ${t.border}`, color: t.text, fontFamily: "'Playfair Display',serif", fontSize: 20, fontWeight: 600, outline: "none", padding: "4px 0" }}
+                      style={{ background: "transparent", border: "none", borderBottom: `1px solid ${t.border}`, color: t.text, fontFamily: "'Outfit',sans-serif", fontSize: 20, fontWeight: 600, outline: "none", padding: "4px 0" }}
                     />
                   </div>
                 </div>
@@ -333,7 +348,7 @@ function Settings({ onClose, theme, setTheme, user, setUser, prefs, setPrefs }) 
                   <Ic n="trophy" size={22} color={t.gold} />
                   <div>
                     <div style={{ fontSize: 11, color: t.muted, marginBottom: 2 }}>Lifetime Study Points</div>
-                    <div style={{ fontFamily: "'Playfair Display',serif", fontSize: 38, fontWeight: 700, color: t.gold, lineHeight: 1 }}>{user.score} <span style={{ fontSize: 14, fontFamily: "'Outfit',sans-serif", fontWeight: 400 }}>pts</span></div>
+                    <div style={{ fontFamily: "'Outfit',sans-serif", fontSize: 38, fontWeight: 700, color: t.gold, lineHeight: 1 }}>{user.score} <span style={{ fontSize: 14, fontFamily: "'DM Sans',sans-serif", fontWeight: 400 }}>pts</span></div>
                   </div>
                 </div>
               </div>
@@ -356,18 +371,21 @@ function Upload({ theme, onGenerate, prefs, setPrefs }) {
     { id: "flashcards", icon: "card", label: "Flashcards", desc: `${prefs.flashcardCount} cards for active recall` },
     { id: "quiz", icon: "quiz", label: "Quiz", desc: `${prefs.quizCount} MCQ questions` },
     { id: "mindmap", icon: "map", label: "Mind Map", desc: "Visual concept hierarchy" },
+    { id: "glossary", icon: "book", label: "Glossary", desc: "Key terms and definitions" },
+    { id: "revision", icon: "zap", label: "Revision Notes", desc: "Condensed bullet points" },
+    { id: "exam", icon: "sparkle", label: "Exam Questions", desc: "Advanced application questions" },
   ];
 
 
 
   return (
-    <div style={{ maxWidth: 660, margin: "0 auto", padding: "44px 24px" }}>
+    <div style={{ maxWidth: "100%", margin: "0 auto", padding: "44px 5vw" }}>
       <div className="fu" style={{ marginBottom: 44 }}>
         <div style={{ display: "inline-flex", alignItems: "center", gap: 7, padding: "5px 14px", background: t.accDim, border: `1px solid ${t.borderAcc}`, borderRadius: 20, marginBottom: 22 }}>
           <Ic n="sparkle" size={12} color={t.acc} />
           <span style={{ fontSize: 11, color: t.acc, fontFamily: "'Fira Code',monospace", letterSpacing: ".04em" }}>AI-powered study assistant</span>
         </div>
-        <h1 style={{ fontFamily: "'Playfair Display',serif", fontSize: "clamp(34px,5vw,56px)", fontWeight: 700, lineHeight: 1.1, letterSpacing: "-.02em", marginBottom: 14 }}>
+        <h1 style={{ fontFamily: "'Outfit',sans-serif", fontSize: "clamp(34px,5vw,56px)", fontWeight: 700, lineHeight: 1.1, letterSpacing: "-.02em", marginBottom: 14 }}>
           Turn any PDF into<br />
           <span style={{ color: t.acc, fontStyle: "italic" }}>structured knowledge.</span>
         </h1>
@@ -382,7 +400,7 @@ function Upload({ theme, onGenerate, prefs, setPrefs }) {
         <div style={{ width: 52, height: 52, borderRadius: 15, background: t.accDim, border: `1px solid ${t.borderAcc}`, display: "flex", alignItems: "center", justifyContent: "center", margin: "0 auto 14px", boxShadow: `0 8px 24px ${t.acc}22` }}>
           <Ic n="brand" size={24} color={t.acc} />
         </div>
-        <div style={{ fontFamily: "'Playfair Display',serif", fontSize: 19, fontWeight: 500, marginBottom: 5 }}>Drop PDF files here</div>
+        <div style={{ fontFamily: "'Outfit',sans-serif", fontSize: 19, fontWeight: 500, marginBottom: 5 }}>Drop PDF files here</div>
         <div style={{ fontSize: 13, color: t.muted }}>or click to browse — multiple files supported — max 20MB each</div>
       </div>
 
@@ -451,7 +469,7 @@ function Loading({ theme, fileCount }) {
         </div>
         <div style={{ position: "absolute", inset: -10, borderRadius: 30, border: `1px solid ${t.acc}44`, animation: "pulse 2s ease-in-out .5s infinite" }} />
       </div>
-      <h2 style={{ fontFamily: "'Playfair Display',serif", fontSize: 28, fontWeight: 600, marginBottom: 6, letterSpacing: "-.01em" }}>Processing {fileCount > 1 ? `${fileCount} documents` : "your document"}</h2>
+      <h2 style={{ fontFamily: "'Outfit',sans-serif", fontSize: 28, fontWeight: 600, marginBottom: 6, letterSpacing: "-.01em" }}>Processing {fileCount > 1 ? `${fileCount} documents` : "your document"}</h2>
       <p style={{ fontSize: 14, color: t.muted, marginBottom: 44 }}>This takes about 15–30 seconds</p>
       <div style={{ width: "100%", maxWidth: 340, display: "flex", flexDirection: "column", gap: 14 }}>
         {steps.map((s, i) => (
@@ -495,7 +513,7 @@ function Notes({ data, theme, onExplain }) {
             onMouseEnter={e => e.currentTarget.style.background = t.elevated} onMouseLeave={e => e.currentTarget.style.background = "transparent"}>
             <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
               <span style={{ fontFamily: "'Fira Code',monospace", fontSize: 10, color: t.acc, background: t.accDim, padding: "2px 7px", borderRadius: 4 }}>{String(i + 1).padStart(2, "0")}</span>
-              <span style={{ fontFamily: "'Playfair Display',serif", fontSize: 16, fontWeight: 500 }}>{s.heading}</span>
+              <span style={{ fontFamily: "'Outfit',sans-serif", fontSize: 16, fontWeight: 500 }}>{s.heading}</span>
             </div>
             <div style={{ transform: open.has(i) ? "rotate(180deg)" : "rotate(0)", transition: "transform .25s", color: t.faint }}>
               <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5"><polyline points="6,9 12,15 18,9" /></svg>
@@ -599,7 +617,7 @@ function Quiz({ data, theme, onScore }) {
     <div>
       {done && (
         <div className="fu" style={{ padding: "28px", background: score / questions.length >= .7 ? t.successDim : t.goldDim, border: `1px solid ${(score / questions.length >= .7 ? t.success : t.gold)}33`, borderRadius: 18, textAlign: "center", marginBottom: 24 }}>
-          <div style={{ fontFamily: "'Playfair Display',serif", fontSize: 54, fontWeight: 700, color: score / questions.length >= .7 ? t.success : t.gold, lineHeight: 1, marginBottom: 6 }}>{score}<span style={{ fontSize: 22, color: t.muted }}>/{questions.length}</span></div>
+          <div style={{ fontFamily: "'Outfit',sans-serif", fontSize: 54, fontWeight: 700, color: score / questions.length >= .7 ? t.success : t.gold, lineHeight: 1, marginBottom: 6 }}>{score}<span style={{ fontSize: 22, color: t.muted }}>/{questions.length}</span></div>
           <p style={{ fontSize: 14, color: t.muted, marginBottom: 16 }}>{score / questions.length > .8 ? "Outstanding performance." : score / questions.length > .5 ? "Good effort — review the missed ones." : "Keep studying and try again."}</p>
           <button onClick={() => setAnswers({})} style={{ padding: "9px 22px", borderRadius: 9, border: `1px solid ${t.border}`, background: t.surface, color: t.text, fontSize: 13, fontWeight: 500, cursor: "pointer" }}>Retry quiz</button>
         </div>
@@ -609,7 +627,7 @@ function Quiz({ data, theme, onScore }) {
         return (
           <div key={qi} className="fu" style={{ animationDelay: `${qi * .04}s`, background: t.surface, border: `1px solid ${t.border}`, borderRadius: 14, padding: "20px", marginBottom: 12 }}>
             <div style={{ fontFamily: "'Fira Code',monospace", fontSize: 10, color: t.faint, marginBottom: 10, letterSpacing: ".05em" }}>Q {String(qi + 1).padStart(2, "0")} / {String(questions.length).padStart(2, "0")}</div>
-            <p style={{ fontFamily: "'Playfair Display',serif", fontSize: 16, fontWeight: 500, lineHeight: 1.55, marginBottom: 16, color: t.text }}>{q.question}</p>
+            <p style={{ fontFamily: "'Outfit',sans-serif", fontSize: 16, fontWeight: 500, lineHeight: 1.55, marginBottom: 16, color: t.text }}>{q.question}</p>
             <div style={{ display: "flex", flexDirection: "column", gap: 7 }}>
               {q.options.map((opt, oi) => {
                 const key = opt.charAt(0); const isChosen = chosen === key; const isCorrect = key === q.answer; const reveal = !!chosen;
@@ -645,20 +663,20 @@ function MindMap({ data, theme }) {
     const palette = [t.acc, t.sec, t.success, t.danger, "#a78bfa", "#fb923c"];
     ctx.beginPath(); ctx.arc(cx, cy, 50, 0, Math.PI * 2); ctx.fillStyle = t.accDim; ctx.fill();
     ctx.strokeStyle = t.acc; ctx.lineWidth = 1.5; ctx.stroke();
-    ctx.fillStyle = t.acc; ctx.font = `600 11px 'Outfit'`; ctx.textAlign = "center"; ctx.textBaseline = "middle";
+    ctx.fillStyle = t.acc; ctx.font = `600 11px 'DM Sans'`; ctx.textAlign = "center"; ctx.textBaseline = "middle";
     ctx.fillText((data.central_topic || "").substring(0, 16), cx, cy);
     branches.forEach((br, i) => {
       const a = angle * i - Math.PI / 2; const bx = cx + Math.cos(a) * 170, by = cy + Math.sin(a) * 140;
       const color = palette[i % palette.length];
       ctx.beginPath(); ctx.moveTo(cx + Math.cos(a) * 50, cy + Math.sin(a) * 50); ctx.lineTo(bx, by); ctx.strokeStyle = color + "66"; ctx.lineWidth = 1.5; ctx.stroke();
       ctx.beginPath(); ctx.arc(bx, by, 33, 0, Math.PI * 2); ctx.fillStyle = color + "18"; ctx.fill(); ctx.strokeStyle = color + "88"; ctx.lineWidth = 1.2; ctx.stroke();
-      ctx.fillStyle = color; ctx.font = `500 10px 'Outfit'`; ctx.fillText((br.name || "").substring(0, 12), bx, by);
+      ctx.fillStyle = color; ctx.font = `500 10px 'DM Sans'`; ctx.fillText((br.name || "").substring(0, 12), bx, by);
       (br.subtopics || []).slice(0, 3).forEach((sub, j) => {
         const sa = a + (j - 1) * .65; const sx = bx + Math.cos(sa) * 94, sy = by + Math.sin(sa) * 78;
         ctx.beginPath(); ctx.moveTo(bx + Math.cos(sa) * 33, by + Math.sin(sa) * 33); ctx.lineTo(sx, sy); ctx.strokeStyle = color + "44"; ctx.lineWidth = 1; ctx.setLineDash([3, 3]); ctx.stroke(); ctx.setLineDash([]);
         ctx.beginPath(); if (ctx.roundRect) ctx.roundRect(sx - 42, sy - 12, 84, 24, 8); else ctx.rect(sx - 42, sy - 12, 84, 24);
         ctx.fillStyle = t.elevated; ctx.fill(); ctx.strokeStyle = color + "44"; ctx.lineWidth = 1; ctx.stroke();
-        ctx.fillStyle = t.muted; ctx.font = `10px 'Outfit'`; ctx.fillText((sub.name || "").substring(0, 13), sx, sy);
+        ctx.fillStyle = t.muted; ctx.font = `10px 'DM Sans'`; ctx.fillText((sub.name || "").substring(0, 13), sx, sy);
       });
     });
   }, [data, theme, t.acc, t.accDim, t.danger, t.elevated, t.muted, t.sec, t.success, t.surface]);
@@ -672,8 +690,70 @@ function MindMap({ data, theme }) {
   );
 }
 
+// ── Glossary ───────────────────────────────────────────────────────────────────
+function Glossary({ data, theme }) {
+  const t = THEMES[theme];
+  const terms = data.terms || [];
+  return (
+    <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(300px, 1fr))", gap: 16 }}>
+      {terms.map((item, i) => (
+        <div key={i} className="fu" style={{ animationDelay: `${i * .04}s`, background: t.surface, border: `1px solid ${t.border}`, borderRadius: 14, padding: "20px" }}>
+          <div style={{ fontFamily: "'Outfit',sans-serif", fontSize: 18, fontWeight: 600, color: t.acc, marginBottom: 8 }}>{item.term}</div>
+          <div style={{ fontSize: 13, lineHeight: 1.6, color: t.text, marginBottom: 12 }}>{item.definition}</div>
+          {item.example && (
+            <div style={{ padding: "8px 12px", background: t.elevated, borderRadius: 8, fontSize: 12, color: t.muted, borderLeft: `2px solid ${t.borderAcc}` }}>
+              <em>Example:</em> {item.example}
+            </div>
+          )}
+        </div>
+      ))}
+    </div>
+  );
+}
+
+// ── Revision Notes ─────────────────────────────────────────────────────────────
+function RevisionNotes({ data, theme }) {
+  const t = THEMES[theme];
+  const points = data.revision_points || [];
+  return (
+    <div className="fu" style={{ background: t.surface, border: `1px solid ${t.borderAcc}`, borderRadius: 14, padding: "24px" }}>
+      <div style={{ fontSize: 12, letterSpacing: ".1em", textTransform: "uppercase", color: t.acc, fontFamily: "'Fira Code',monospace", marginBottom: 20 }}>High-Yield Review</div>
+      <ul style={{ margin: 0, paddingLeft: 20, display: "flex", flexDirection: "column", gap: 14 }}>
+        {points.map((point, i) => (
+          <li key={i} style={{ fontSize: 14, lineHeight: 1.7, color: t.text }}>
+            {point}
+          </li>
+        ))}
+      </ul>
+    </div>
+  );
+}
+
+// ── Exam Questions ─────────────────────────────────────────────────────────────
+function ExamQuestions({ data, theme }) {
+  const t = THEMES[theme];
+  const questions = data.exam_questions || [];
+  return (
+    <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
+      {questions.map((q, i) => (
+        <div key={i} className="fu" style={{ animationDelay: `${i * .05}s`, background: t.surface, border: `1px solid ${t.border}`, borderRadius: 14, padding: "24px" }}>
+          <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 12 }}>
+            <span style={{ padding: "2px 8px", borderRadius: 4, background: t.dangerDim, color: t.danger, fontSize: 10, fontFamily: "'Fira Code',monospace", textTransform: "uppercase" }}>{q.type.replace("_", " ")}</span>
+          </div>
+          <div style={{ fontSize: 16, fontWeight: 500, color: t.text, marginBottom: 16, lineHeight: 1.5 }}>{q.question}</div>
+          <div style={{ padding: "14px 16px", background: t.elevated, border: `1px solid ${t.borderAcc}`, borderRadius: 10, marginTop: 16 }}>
+            <div style={{ fontSize: 11, color: t.acc, letterSpacing: ".05em", textTransform: "uppercase", marginBottom: 8, fontFamily: "'Fira Code',monospace" }}>Ideal Answer & Rubric</div>
+            <div style={{ fontSize: 13, color: t.muted, lineHeight: 1.6, marginBottom: 8 }}>{q.ideal_answer}</div>
+            <div style={{ fontSize: 12, color: t.gold, fontStyle: "italic" }}>Rubric: {q.rubric}</div>
+          </div>
+        </div>
+      ))}
+    </div>
+  );
+}
+
 // ── Chat ───────────────────────────────────────────────────────────────────────
-function Chat({ theme, session, onClose }) {
+function Chat({ theme, session, onClose, authHeaders }) {
   const t = THEMES[theme]; const [msgs, setMsgs] = useState([{ role: "ai", text: "Ask me anything about your document." }]);
   const [input, setInput] = useState(""); const [loading, setLoading] = useState(false); const bottom = useRef();
   useEffect(() => { bottom.current?.scrollIntoView({ behavior: "smooth" }); }, [msgs]);
@@ -681,7 +761,7 @@ function Chat({ theme, session, onClose }) {
     if (!input.trim() || !session || loading) return;
     const msg = input.trim(); setInput(""); setMsgs(m => [...m, { role: "user", text: msg }]); setLoading(true);
     try {
-      const res = await fetch(`${API}/api/chat`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ session_id: session, message: msg, history: msgs.slice(-6).map(m => ({ role: m.role === "ai" ? "assistant" : "user", content: m.text })) }) });
+      const res = await fetch(`${API}/api/chat`, { method: "POST", headers: { "Content-Type": "application/json", ...authHeaders }, body: JSON.stringify({ session_id: session, message: msg, history: msgs.slice(-6).map(m => ({ role: m.role === "ai" ? "assistant" : "user", content: m.text })) }) });
       const d = await res.json(); setMsgs(m => [...m, { role: "ai", text: d.reply || "Sorry, I couldn't process that." }]);
     } catch { setMsgs(m => [...m, { role: "ai", text: "Connection error." }]); }
     setLoading(false);
@@ -691,7 +771,7 @@ function Chat({ theme, session, onClose }) {
       <div style={{ padding: "16px 18px", borderBottom: `1px solid ${t.border}`, display: "flex", alignItems: "center", justifyContent: "space-between" }}>
         <div style={{ display: "flex", alignItems: "center", gap: 9 }}>
           <div style={{ width: 30, height: 30, borderRadius: 9, background: t.accDim, border: `1px solid ${t.borderAcc}`, display: "flex", alignItems: "center", justifyContent: "center" }}><Ic n="chat" size={14} color={t.acc} /></div>
-          <span style={{ fontFamily: "'Playfair Display',serif", fontSize: 16, fontWeight: 500 }}>Chat with document</span>
+          <span style={{ fontFamily: "'Outfit',sans-serif", fontSize: 16, fontWeight: 500 }}>Chat with document</span>
         </div>
         <button onClick={onClose} style={{ background: "none", border: "none", cursor: "pointer", color: t.muted, display: "flex", padding: 4 }}><Ic n="x" size={15} /></button>
       </div>
@@ -738,7 +818,7 @@ function ScoreAnim({ score, milestone }) {
   const col = milestone ? "#FFEDA8" : "#6ee7b7";
   return (
     <div style={{ position: "fixed", top: "18%", left: "50%", zIndex: 600, pointerEvents: "none", animation: "scoreFloat 2.2s ease forwards" }}>
-      <div style={{ padding: milestone ? "12px 24px" : "8px 18px", borderRadius: 14, background: milestone ? "rgba(255,237,168,0.15)" : "rgba(110,231,183,0.15)", border: `1px solid ${col}44`, color: col, fontFamily: "'Outfit',sans-serif", fontWeight: 700, fontSize: milestone ? 18 : 14, whiteSpace: "nowrap" }}>
+      <div style={{ padding: milestone ? "12px 24px" : "8px 18px", borderRadius: 14, background: milestone ? "rgba(255,237,168,0.15)" : "rgba(110,231,183,0.15)", border: `1px solid ${col}44`, color: col, fontFamily: "'DM Sans',sans-serif", fontWeight: 700, fontSize: milestone ? 18 : 14, whiteSpace: "nowrap" }}>
         {milestone ? `${score} points — incredible!` : "+1 correct"}
       </div>
     </div>
@@ -748,13 +828,7 @@ function ScoreAnim({ score, milestone }) {
 // ── Unique Header ──────────────────────────────────────────────────────────────
 function Header({ theme, setTheme, user, result, chatOpen, setChatOpen, setSettings, setView, sidebarOpen, setSidebarOpen }) {
   const t = THEMES[theme];
-  const now = new Date();
-  const timeStr = now.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
-  const [time, setTime] = useState(timeStr);
-  useEffect(() => {
-    const iv = setInterval(() => setTime(new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })), 10000);
-    return () => clearInterval(iv);
-  }, []);
+
 
   return (
     <div style={{ height: 60, display: "flex", alignItems: "center", padding: "0 16px", borderBottom: `1px solid ${t.border}`, background: THEMES[theme].sidebarBg, backdropFilter: "blur(24px)", position: "relative", zIndex: 10, flexShrink: 0, gap: 10 }}>
@@ -771,11 +845,10 @@ function Header({ theme, setTheme, user, result, chatOpen, setChatOpen, setSetti
           <Ic n="brand" size={18} color={theme === "dark" ? t.bg : "#fff"} />
         </div>
         <div style={{ position: "relative", display: "flex", alignItems: "center" }}>
-          <span style={{ fontFamily: "'Playfair Display',serif", fontSize: 22, fontWeight: 800, letterSpacing: "-.02em", color: t.text }}>Study</span>
-          <span style={{ fontFamily: "'Playfair Display',serif", fontSize: 22, fontWeight: 800, letterSpacing: "-.02em", fontStyle: "italic", color: t.acc }}>AI</span>
+          <span style={{ fontFamily: "'Outfit',sans-serif", fontSize: 22, fontWeight: 800, letterSpacing: "-.02em", color: t.text }}>Study</span>
+          <span style={{ fontFamily: "'Outfit',sans-serif", fontSize: 22, fontWeight: 800, letterSpacing: "-.02em", fontStyle: "italic", color: t.acc }}>AI</span>
         </div>
-        <div style={{ width: 1, height: 18, background: t.border, margin: "0 4px" }} />
-        <span style={{ fontFamily: "'Fira Code',monospace", fontSize: 9, color: t.faint, letterSpacing: ".12em", textTransform: "uppercase" }}>{time}</span>
+
       </div>
 
       {/* Center — user greeting */}
@@ -822,8 +895,11 @@ function Header({ theme, setTheme, user, result, chatOpen, setChatOpen, setSetti
 
 // ── Main App ───────────────────────────────────────────────────────────────────
 export default function App() {
+  const [token, setToken] = useState(localStorage.getItem("token"));
   const [theme, setTheme] = useState("dark");
   const [user, setUser] = useState({ name: "Student", score: 0 });
+
+  const authHeaders = token ? { "Authorization": `Bearer ${token}` } : {};
   const [view, setView] = useState("home");
   const [result, setResult] = useState(null);
   const [session, setSession] = useState(null);
@@ -845,7 +921,16 @@ export default function App() {
   const t = THEMES[theme];
 
   useEffect(() => { injectCSS(theme); }, [theme]);
-  useEffect(() => { fetchHistory(); }, [result]);
+  useEffect(() => {
+    const fetchHistory = async () => {
+      if (!token) return;
+      try {
+        const res = await fetch(`${API}/api/history`, { headers: authHeaders });
+        if (res.ok) setHistory(await res.json());
+      } catch (err) { console.error("History fetch failed:", err); }
+    };
+    fetchHistory();
+  }, [result, token, authHeaders]);
   useEffect(() => {
     const onMove = e => { if (dragging.current) setSidebarW(Math.max(160, Math.min(380, e.clientX))); };
     const onUp = () => { dragging.current = false; };
@@ -862,7 +947,7 @@ export default function App() {
       fd.append("detail", ["", "brief", "standard", "in-depth"][prefs.noteDetail]);
       fd.append("flashcard_count", prefs.flashcardCount);
       fd.append("quiz_count", prefs.quizCount);
-      const res = await fetch(`${API}/api/upload`, { method: "POST", body: fd });
+      const res = await fetch(`${API}/api/upload`, { method: "POST", headers: { ...authHeaders }, body: fd });
       if (res.ok) { const d = await res.json(); setResult(d); setSession(d.session_id); setView("result"); }
     } catch (e) { alert("Error: " + e.message); }
     setLoading(false);
@@ -889,7 +974,7 @@ export default function App() {
     try {
       const res = await fetch(`${API}/api/explain`, {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers: { "Content-Type": "application/json", ...authHeaders },
         body: JSON.stringify({ session_id: session, selected_text: text })
       });
       const d = await res.json();
@@ -903,23 +988,17 @@ export default function App() {
     setLoading(true); setMode(h.mode);
     const detail = ["", "brief", "standard", "in-depth"][prefs.noteDetail];
     try {
-      const res = await fetch(`${API}/api/reload`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ session_id: h.session_id, mode: h.mode, detail: detail, flashcard_count: prefs.flashcardCount, quiz_count: prefs.quizCount }) });
+      const res = await fetch(`${API}/api/reload`, { method: "POST", headers: { "Content-Type": "application/json", ...authHeaders }, body: JSON.stringify({ session_id: h.session_id, mode: h.mode, detail: detail, flashcard_count: prefs.flashcardCount, quiz_count: prefs.quizCount }) });
       if (res.ok) { const d = await res.json(); setResult(d); setSession(h.session_id); setView("result"); }
     } catch { }
     setLoading(false);
   };
 
-  const fetchHistory = async () => {
-    try {
-      const res = await fetch(`${API}/api/history`);
-      const data = await res.json();
-      setHistory(data);
-    } catch (err) { console.error("History fetch failed:", err); }
-  };
+
 
   const deleteHistoryItem = async (sid, e) => {
     e.stopPropagation();
-    await fetch(`${API}/api/history/${sid}`, { method: "DELETE" });
+    await fetch(`${API}/api/history/${sid}`, { method: "DELETE", headers: authHeaders });
     setHistory(h => h.filter(x => x.session_id !== sid));
     if (session === sid) { setView("home"); setResult(null); }
   };
@@ -930,11 +1009,30 @@ export default function App() {
     const a = document.createElement("a"); a.href = URL.createObjectURL(new Blob([md], { type: "text/markdown" })); a.download = "notes.md"; a.click();
   };
 
-  // No login required — app loads directly
+  const exportOkf = async () => {
+    if (!session) return;
+    try {
+      const res = await fetch(`${API}/api/export/okf/${session}`, { headers: authHeaders });
+      if (res.ok) {
+        const data = await res.json();
+        const a = document.createElement("a");
+        a.href = URL.createObjectURL(new Blob([JSON.stringify(data, null, 2)], { type: "application/json" }));
+        a.download = `study_session_${session}.okf.json`;
+        a.click();
+      }
+    } catch (err) { console.error("Export OKF failed:", err); }
+  };
+
+  if (!token) {
+    return (
+      <div style={{ display: "flex", flexDirection: "column", height: "100vh", background: t.bg, overflow: "hidden", position: "relative" }}>
+        <AuthScreen theme={theme} THEMES={THEMES} setToken={setToken} />
+      </div>
+    );
+  }
 
   return (
     <div style={{ display: "flex", flexDirection: "column", height: "100vh", background: t.bg, overflow: "hidden", position: "relative" }}>
-      <Background theme={theme} />
       {scorePopup && <ScoreAnim score={scorePopup.score} milestone={scorePopup.milestone} />}
 
       <Header
@@ -987,11 +1085,11 @@ export default function App() {
           {!loading && view === "home" && <Upload theme={theme} onGenerate={handleGenerate} prefs={prefs} setPrefs={setPrefs} />}
           {loading && <Loading theme={theme} fileCount={fileCount} />}
           {!loading && view === "result" && result && (
-            <div style={{ padding: "28px 40px", maxWidth: 820, margin: "0 auto" }}>
+            <div style={{ padding: "28px 5vw", maxWidth: "100%", margin: "0 auto" }}>
               <div className="fu" style={{ marginBottom: 24 }}>
                 <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", gap: 16, marginBottom: 12 }}>
                   <div>
-                    <h1 style={{ fontFamily: "'Playfair Display',serif", fontSize: 28, fontWeight: 700, letterSpacing: "-.01em", marginBottom: 10, lineHeight: 1.2 }}>{result.title}</h1>
+                    <h1 style={{ fontFamily: "'Outfit',sans-serif", fontSize: 28, fontWeight: 700, letterSpacing: "-.01em", marginBottom: 10, lineHeight: 1.2 }}>{result.title}</h1>
                     <div style={{ display: "flex", flexWrap: "wrap", gap: 6, alignItems: "center" }}>
                       <span style={{ padding: "2px 8px", borderRadius: 5, fontSize: 10, fontFamily: "'Fira Code',monospace", background: t.accDim, color: t.acc, fontWeight: 600, letterSpacing: ".05em", textTransform: "uppercase" }}>{result.mode}</span>
                       <span style={{ fontSize: 12, color: t.faint }}>{result.subject}</span>
@@ -999,10 +1097,16 @@ export default function App() {
                       <span style={{ fontSize: 12, color: t.faint }}>{result.filename}</span>
                     </div>
                   </div>
-                  <button onClick={exportMd} style={{ display: "flex", alignItems: "center", gap: 6, padding: "7px 14px", borderRadius: 9, border: `1px solid ${t.border}`, background: "transparent", color: t.muted, cursor: "pointer", fontSize: 12, fontWeight: 500, flexShrink: 0, transition: "all .2s" }}
-                    onMouseEnter={e => { e.currentTarget.style.borderColor = t.acc; e.currentTarget.style.color = t.acc; }} onMouseLeave={e => { e.currentTarget.style.borderColor = t.border; e.currentTarget.style.color = t.muted; }}>
-                    <Ic n="download" size={13} /> Export
-                  </button>
+                  <div style={{ display: "flex", gap: 8 }}>
+                    <button onClick={exportOkf} style={{ display: "flex", alignItems: "center", gap: 6, padding: "7px 14px", borderRadius: 9, border: `1px solid ${t.acc}44`, background: t.accDim, color: t.acc, cursor: "pointer", fontSize: 12, fontWeight: 500, flexShrink: 0, transition: "all .2s" }}
+                      onMouseEnter={e => { e.currentTarget.style.borderColor = t.acc; e.currentTarget.style.background = t.acc + "22"; }} onMouseLeave={e => { e.currentTarget.style.borderColor = t.acc + "44"; e.currentTarget.style.background = t.accDim; }}>
+                      <Ic n="brand" size={13} /> Export OKF
+                    </button>
+                    <button onClick={exportMd} style={{ display: "flex", alignItems: "center", gap: 6, padding: "7px 14px", borderRadius: 9, border: `1px solid ${t.border}`, background: "transparent", color: t.muted, cursor: "pointer", fontSize: 12, fontWeight: 500, flexShrink: 0, transition: "all .2s" }}
+                      onMouseEnter={e => { e.currentTarget.style.borderColor = t.acc; e.currentTarget.style.color = t.acc; }} onMouseLeave={e => { e.currentTarget.style.borderColor = t.border; e.currentTarget.style.color = t.muted; }}>
+                      <Ic n="download" size={13} /> Export MD
+                    </button>
+                  </div>
                 </div>
                 {result.summary && <div style={{ padding: "14px 18px", borderLeft: `3px solid ${t.acc}`, background: t.surface, borderRadius: "0 12px 12px 0", fontSize: 14, color: t.muted, lineHeight: 1.8, fontStyle: "italic" }}>{result.summary}</div>}
               </div>
@@ -1010,12 +1114,15 @@ export default function App() {
               {mode === "flashcards" && <Flashcards data={result} theme={theme} />}
               {mode === "quiz" && <Quiz data={result} theme={theme} onScore={handleScore} />}
               {mode === "mindmap" && <MindMap data={result} theme={theme} />}
+              {mode === "glossary" && <Glossary data={result} theme={theme} />}
+              {mode === "revision" && <RevisionNotes data={result} theme={theme} />}
+              {mode === "exam" && <ExamQuestions data={result} theme={theme} />}
             </div>
           )}
         </div>
       </div>
 
-      {chatOpen && session && <Chat theme={theme} session={session} onClose={() => setChatOpen(false)} />}
+      {chatOpen && session && <Chat theme={theme} session={session} onClose={() => setChatOpen(false)} authHeaders={authHeaders} />}
       {explainText && explainData !== undefined && (
         <Explain text={explainText} explanation={explainData} theme={theme} onClose={() => { setExplainText(""); setExplainData(undefined); }} />
       )}

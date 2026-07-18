@@ -1,4 +1,6 @@
-from fastapi import FastAPI, UploadFile, File, HTTPException
+from fastapi import FastAPI, UploadFile, File, HTTPException, Depends
+from sqlalchemy.orm import Session
+import database, models, auth
 from fastapi.staticfiles import StaticFiles
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import FileResponse, JSONResponse
@@ -20,6 +22,10 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
+# --- Routers ---
+from routers import auth_routes
+app.include_router(auth_routes.router)
 
 # ── Config ───────────────────────────────────────────────────────────────────
 GROQ_API_KEY = os.getenv("GROQ_API_KEY")
@@ -176,6 +182,61 @@ Return ONLY a valid JSON object with this exact structure (no markdown, no expla
 
 Create 4-6 branches with 2-3 subtopics each. Use different hex colors for each branch."""
 
+    elif mode == "glossary":
+        return base + """Based on this document, create a comprehensive glossary of all key terms, jargon, and specific vocabulary used.
+
+Return ONLY a valid JSON object with this exact structure (no markdown, no explanation):
+{
+  "subject": "detected subject/topic",
+  "title": "document title or main topic",
+  "summary": "2-3 sentence overview",
+  "terms": [
+    {
+      "term": "term name",
+      "definition": "clear, concise definition",
+      "example": "example of usage in context"
+    }
+  ]
+}
+
+Extract at least 15-20 important terms."""
+
+    elif mode == "revision":
+        return base + """Based on this document, generate highly condensed, bulleted revision notes optimized for last-minute exam review.
+
+Return ONLY a valid JSON object with this exact structure (no markdown, no explanation):
+{
+  "subject": "detected subject/topic",
+  "title": "document title or main topic",
+  "summary": "1 sentence overview",
+  "revision_points": [
+    "Core concept 1 condensed into a single punchy line",
+    "Core concept 2 condensed into a single punchy line"
+  ]
+}
+
+Extract the absolute most critical 15-25 points."""
+
+    elif mode == "exam":
+        return base + f"""Based on this document, generate advanced, application-based exam questions (short answer and essay style).
+
+Return ONLY a valid JSON object with this exact structure (no markdown, no explanation):
+{{
+  "subject": "detected subject/topic",
+  "title": "document title or main topic",
+  "summary": "2-3 sentence overview",
+  "exam_questions": [
+    {{
+      "question": "complex application-based question",
+      "type": "short_answer",
+      "ideal_answer": "the key points that should be in the answer",
+      "rubric": "1 point for X, 2 points for Y"
+    }}
+  ]
+}}
+
+Create exactly {quiz_count} rigorous questions."""
+
     return base
 
 # ── Helper: parse JSON from AI ────────────────────────────────────────────────
@@ -236,7 +297,9 @@ async def upload_pdf(
     mode: str = "notes", 
     detail: str = "standard", 
     flashcard_count: int = 15, 
-    quiz_count: int = 10
+    quiz_count: int = 10,
+    db: Session = Depends(database.get_db),
+    current_user: models.User = Depends(auth.get_current_user)
 ):
     cleanup_old_uploads()
     if not file.filename.endswith(".pdf"):
@@ -283,20 +346,30 @@ async def upload_pdf(
         **data
     }
 
-    add_to_history({
-        "session_id": session_id,
-        "filename":   file.filename,
-        "mode":       mode,
-        "subject":    data.get("subject", "Unknown"),
-        "title":      data.get("title", file.filename),
-        "created_at": datetime.now().isoformat()
-    })
+    # Save to database
+    new_doc = models.Document(
+        session_id=session_id,
+        title=file.filename,
+        raw_text=pdf_text,
+        user_id=current_user.id
+    )
+    db.add(new_doc)
+    db.commit()
+    db.refresh(new_doc)
+    
+    new_material = models.StudyMaterial(
+        type=mode,
+        content=data,
+        document_id=new_doc.id
+    )
+    db.add(new_material)
+    db.commit()
 
     return JSONResponse(result)
 
 
 @app.post("/api/chat")
-async def chat_with_pdf(req: ChatRequest):
+async def chat_with_pdf(req: ChatRequest, current_user: models.User = Depends(auth.get_current_user)):
     pdf_path = UPLOAD_DIR / f"{req.session_id}.pdf"
     if not pdf_path.exists():
         raise HTTPException(404, "Session not found. Please re-upload your PDF.")
@@ -323,7 +396,7 @@ async def chat_with_pdf(req: ChatRequest):
 
 
 @app.post("/api/explain")
-async def explain_text(req: ExplainRequest):
+async def explain_text(req: ExplainRequest, current_user: models.User = Depends(auth.get_current_user)):
     pdf_path = UPLOAD_DIR / f"{req.session_id}.pdf"
     if not pdf_path.exists():
         raise HTTPException(404, "Session not found.")
@@ -351,22 +424,36 @@ Please:
 
 
 @app.get("/api/history")
-async def get_history():
-    return load_history()
+async def get_history(db: Session = Depends(database.get_db), current_user: models.User = Depends(auth.get_current_user)):
+    docs = db.query(models.Document).filter(models.Document.user_id == current_user.id).order_by(models.Document.upload_time.desc()).all()
+    history = []
+    for d in docs:
+        if d.materials:
+            mat = d.materials[-1] # latest
+            history.append({
+                "session_id": d.session_id,
+                "filename": d.title,
+                "mode": mat.type.value if hasattr(mat.type, "value") else mat.type,
+                "subject": mat.content.get("subject", "Unknown"),
+                "title": mat.content.get("title", d.title),
+                "created_at": d.upload_time.isoformat()
+            })
+    return history
 
 
 @app.delete("/api/history/{session_id}")
-async def delete_history_item(session_id: str):
-    history = load_history()
-    history = [h for h in history if h["session_id"] != session_id]
-    save_history(history)
+async def delete_history_item(session_id: str, db: Session = Depends(database.get_db), current_user: models.User = Depends(auth.get_current_user)):
+    doc = db.query(models.Document).filter(models.Document.session_id == session_id, models.Document.user_id == current_user.id).first()
+    if doc:
+        db.delete(doc)
+        db.commit()
     pdf_path = UPLOAD_DIR / f"{session_id}.pdf"
     if pdf_path.exists():
         pdf_path.unlink()
     return {"ok": True}
 
 @app.post("/api/reload")
-async def reload_session(req: ReloadRequest):
+async def reload_session(req: ReloadRequest, db: Session = Depends(database.get_db), current_user: models.User = Depends(auth.get_current_user)):
     pdf_path = UPLOAD_DIR / f"{req.session_id}.pdf"
     if not pdf_path.exists():
         raise HTTPException(404, "PDF no longer available. Please re-upload.")
@@ -386,12 +473,46 @@ async def reload_session(req: ReloadRequest):
     except Exception as e:
         raise HTTPException(500, f"Reload error: {str(e)}")
 
-    history = load_history()
-    item = next((h for h in history if h["session_id"] == req.session_id), {})
+    doc = db.query(models.Document).filter(models.Document.session_id == req.session_id, models.Document.user_id == current_user.id).first()
+    if doc:
+        new_material = models.StudyMaterial(type=req.mode, content=data, document_id=doc.id)
+        db.add(new_material)
+        db.commit()
+    item_filename = doc.title if doc else "document.pdf"
+    item_created = doc.upload_time.isoformat() if doc else datetime.now().isoformat()
     return JSONResponse({
         "session_id": req.session_id,
         "mode": req.mode,
-        "filename": item.get("filename", "document.pdf"),
-        "created_at": item.get("created_at", datetime.now().isoformat()),
+        "filename": item_filename,
+        "created_at": item_created,
         **data
     })
+
+@app.get("/api/export/okf/{session_id}")
+async def export_okf(session_id: str, db: Session = Depends(database.get_db), current_user: models.User = Depends(auth.get_current_user)):
+    doc = db.query(models.Document).filter(
+        models.Document.session_id == session_id,
+        models.Document.user_id == current_user.id
+    ).first()
+    if not doc:
+        raise HTTPException(404, "Session not found")
+
+    resources = []
+    for mat in doc.materials:
+        schema_type = mat.type.value if hasattr(mat.type, "value") else mat.type
+        resources.append({
+            "name": f"study-ai-{schema_type}",
+            "schema": f"okf-study-{schema_type}",
+            "data": mat.content,
+            "created_at": doc.upload_time.isoformat()
+        })
+        
+    okf_payload = {
+        "name": doc.title,
+        "profile": "data-package",
+        "description": "Study AI Knowledge Extract in Open Knowledge Format",
+        "author": current_user.email,
+        "resources": resources
+    }
+    
+    return JSONResponse(okf_payload)
